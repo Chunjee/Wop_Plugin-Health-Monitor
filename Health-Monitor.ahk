@@ -34,7 +34,7 @@ Sb_RemoteShutDown() ;Allows for remote shutdown
 ;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
 
 GUI_x := 24
-GUI_y := 20
+GUI_y := 50
 ;; Create GUI based off plugins (TEST))
 #Include %A_ScriptDir%\Plugins
 #Include DVR.ahk
@@ -283,16 +283,9 @@ GUI_Build()
 	
 	;Title
 	Gui, Font, s14 w70, Arial
-	Gui, Add, Text, x2 y4 w330 h40 +Center, %The_ProjectName%
+	Gui, Add, Text, x2 y4 w500 h40 +Center, %The_ProjectName%
 	Gui, Font, s10 w70, Arial
-	Gui, Add, Text, x276 y0 w50 h20 +Right, %The_VersionName%
-	
-	;Gui, Add, CheckBox, x30 y30 Checked1 gSwitchOnOff, Always On Top
-	
-	;Gui, Add, Text, x10 y50, |-Modified-|
-	;Gui, Add, Text, x96 y50, |-FileSize-|
-	Gui, Add, Text, x230 y50, |-----Status-----|
-	
+	Gui, Add, Text, x476 y0 w50 h20 +Right, %The_VersionName%
 	
 	;Menu
 	Menu, FileMenu, Add, &Update Now, Update
