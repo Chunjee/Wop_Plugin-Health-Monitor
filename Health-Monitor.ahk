@@ -1,5 +1,5 @@
 ﻿;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
-; Description
+;Description
 ;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
 ; Monitors several TVG systems
 ; 
@@ -20,6 +20,7 @@ The_VersionName = v0.0
 #Include inireadwrite.ahk
 #Include class_GDI.ahk
 #Include util_misc.ahk
+#Include util_json.ahk
 
 ;For Debug Only
 #Include util_arrays.ahk
@@ -29,7 +30,7 @@ Sb_InstallFiles() ;Install Included Files
 Sb_RemoteShutDown() ;Allows for remote shutdown
 
 ;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
-; StartUp
+;StartUp
 ;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
 
 GUI_x := 24
@@ -37,6 +38,8 @@ GUI_y := 20
 ;; Create GUI based off plugins (TEST))
 #Include %A_ScriptDir%\Plugins
 #Include DVR.ahk
+
+
 ;alf
 
 GUI_x += 50 ;Box
@@ -45,33 +48,7 @@ GUI_y += 50 ;Text
 
 ;;Show GUI if all creation was successful
 GUI_Build()
-
-
-
-;UnComment to see what is in the array
-;Array_Gui(AllFiles_Array)
-
-
-
 Return
-
-
-
-class CustomButton
-{
-	__New(hWnd)
-	{
-		this.GDI := new GDI(hWnd)
-		this.hWnd := hWnd
-		this.Draw(0x000000)
-	}
-	Draw(TextColor)
-	{
-		critical
-		this.GDI.FillRectangle(0, 0, this.GDI.CliWidth, this.GDI.CliHeight, 0x008000, TextColor)
-		this.GDI.BitBlt()
-	}
-}
 
 
 #e::
@@ -84,7 +61,7 @@ Return
 
 
 ;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
-; Functions
+;Functions
 ;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
 
 
@@ -255,7 +232,7 @@ Fn_ConvertSecondstoMili(para_Seconds)
 }
 
 
-	
+
 Fn_DataFileInfoTime(para_File)
 {
 	l_FileModified := 
@@ -301,8 +278,8 @@ GUI_Build()
 	global
 	
 	;GUI Always on top variable
-	GUI_AOT := 1
-	Gui +AlwaysOnTop
+	;GUI_AOT := 1
+	;Gui +AlwaysOnTop
 	
 	;Title
 	Gui, Font, s14 w70, Arial
@@ -332,7 +309,8 @@ GUI_Build()
 	Gui, Menu, MyMenuBar
 	
 	;Create the final size of the GUI
-	Gui, Show, h%GUI_y% w330, %The_ProjectName%
+	;h%GUI_y% w330
+	Gui, Show, , %The_ProjectName%
 	Return
 	
 	;Menu Shortcuts
@@ -367,4 +345,3 @@ GUI_Build()
 	GuiClose:
 	ExitApp, 1
 }
-	
