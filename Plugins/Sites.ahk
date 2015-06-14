@@ -100,15 +100,17 @@ Class SiteMonitor {
 		
 		
 		CurrentStatus := this.Info_Array["CurrentStatus"]
+		
 		If (CurrentStatus = "Online") {
 			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 0x000000, 18) ;Green Online
-		} Else {
-			this.Draw("Check Unsuccessful" . CombinedText, Fn_RGB("0xFFFFFF"), 0x000000, 18) ;Green Online
+			Return
 		}
 		If (CurrentStatus = "MainenancePage") {
 			this.Draw("MAINT PAGE" . CombinedText, Fn_RGB("0xFF6600"), 0x000000, 22) ;Orange MAINT PAGE
+			Return
 		}
-		
+		;All others failed
+		this.Draw("Check Unsuccessful" . CombinedText, Fn_RGB("0xFFFFFF"), 0x000000, 18) ;White Check Unsuccessful
 	}
 	
 	DrawDefault()
@@ -135,12 +137,17 @@ Class SiteMonitor {
 		UrlDownloadToFile, % this.Info_Array["URL"], % HTMLFile_loc
 		Sleep 100
 		FileRead, The_MemoryFile, % HTMLFile_loc
-		MaintenanceCheck := Fn_QuickRegEx(The_MemoryFile, "(http:\/\/maintenance\.tvg\.com\/)")
-		If (MaintenanceCheck != "null") {
+		
+		
+		this.Info_Array["CurrentStatus"] := "No Match"
+		
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(http:\/\/maintenance\.tvg\.com\/)")
+		If (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "MainenancePage"
-		} Else {
+		}
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\/\/nodejs\.tvg\.com\/deposit\/quick)")
+		If (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Online"
 		}
-		
 	}
 }
