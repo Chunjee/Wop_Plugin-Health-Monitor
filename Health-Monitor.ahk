@@ -35,10 +35,10 @@ Sb_RemoteShutDown() ;Allows for remote shutdown
 
 GUI_x := 24
 GUI_y := 50
-;; Create GUI based off plugins (TEST))
+;; Create GUI based off plugins (TEST)
 #Include %A_ScriptDir%\Plugins
 #Include DVR.ahk
-
+#Include Sites.ahk
 
 ;alf
 

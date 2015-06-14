@@ -8,39 +8,38 @@ gui_y += 20
 gui_x = 30
 height = 0
 DVRTop_Array := []
+
+;Read from DVR.txt about what DVRs to monitor
 Loop, Read, %A_ScriptDir%\plugins\DVR.txt
 {
+	;Create the DVR Object for each
+	DVR%A_Index% := New DVR(A_LoopReadLine)
+	
 	;Create GUI box for each DVR
 	Gui, Add, Progress, x%gui_x% y%gui_y% w100 h100 hWndhWnd, 100
 	Gui, Show, w630 , %The_ProjectName%
 	gui_x += 120
 	
-	DVR%A_Index% := New DVR(A_LoopReadLine)
-	;Create re-drawable gui for the DVR
+	;Change to a re-drawable gui for the DVR
 	DVR%A_Index%.CreateButton(hWnd)
 	
+	;Add object to array for enumeration
 	DVRTop_Array[A_Index] := DVR%A_Index%
 	
-	
+	;Might be needed later if we want clickable buttons
 	;DVRButton%A_Index% := New CustomButton(hWnd)
-	;Global DVRButton%A_Index% := New CustomButton(hWnd)
 }
+gui_y += 160
+
+;Draw Box around this plugin
 height += 130
 Gui, Add, GroupBox, x6 y%gui_orginaly% w510 h%height%, DVR
-
-
-Loop, % DVRTop_Array.MaxIndex() {
-	
-	DVR%A_Index%.CheckStatus()
-	DVR%A_Index%.CheckStatistics()
-}
 
 
 Gui, Show, h1000 w530 , %The_ProjectName%
 
 ;Debug options
-;Alf := Fn_JSONfromOBJ(DVRTop_Array)
-;Clipboard := Alf
+;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
 ;FileAppend, %Alf%, %A_ScriptDir%\HUGE.JSON
 ;Array_GUI(DVRTop_Array)
 
@@ -53,14 +52,6 @@ SetTimer, CheckDVRs, 2000
 ;OnMessage(0x201, "WM_LBUTTONDOWN")
 ;OnMessage(0x202, "WM_LBUTTONUP")
 
-
-
-Fn_CurrentUnixTime()
-{
-	TimeStamp := A_NowUTC
-	TimeStamp -= 19700101000000,seconds
-	Return % TimeStamp
-}
 
 
 Sb_CheckDVRs()
@@ -79,8 +70,9 @@ Sb_CheckDVRs()
 		
 		;Update GUI Box of each DVR
 		DVR%A_Index%.UpdateGUI()
-		
+		;DVR%A_Index%.SetOptimal()
 	}
+	;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
 	Return
 }
 
@@ -210,10 +202,27 @@ Class DVR {
 			this.Info_Array["UsagePercent"] := floor((this.Info_Array["ActiveChannels"] / this.Info_Array["TotalChannels"]) * 100)
 		}
 	}
+	
+	SetOptimal() {
+		;Use /statistics Endpoint, save raw result to JSON_Statistics
+		Endpoint := this.Info_Array["endpoint"] . "/control?operation=SetStatusToOptimal"
+		Staging := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+		Staging.Open("Get", Endpoint, False)
+		Staging.SetRequestHeader("Accept", "application/json")
+		Staging.Send()
+		
+		;Save Raw just for later viewing
+		this.Info_Array["JSON_Optimal"] := Staging.ResponseText
+	}
 }
 
 
-
+Fn_CurrentUnixTime()
+{
+	TimeStamp := A_NowUTC
+	TimeStamp -= 19700101000000,seconds
+	Return % TimeStamp
+}
 
 ;-------------------------------------------------------------------
 

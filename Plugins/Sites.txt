@@ -1,0 +1,4 @@
+Name:TVG	URL:http://tvg.com/
+Name:NJ		URL:http://4njbets.tvg.com/
+Name:PA		URL:http://pa.tvg.com/
+Name:IA		URL:http://ia.tvg.com/
