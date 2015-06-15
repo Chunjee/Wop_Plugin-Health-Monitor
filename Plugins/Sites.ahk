@@ -133,14 +133,20 @@ Class SiteMonitor {
 		;Download the page and try to understand what state it is in. ONLINE / MAINTENANCE / OTHER
 		HTMLFile_loc := % A_ScriptDir . "\Data\Temp\" . this.Info_Array["Name"] . ".html"
 		
-		FileDelete, % HTMLFile_loc
-		UrlDownloadToFile, % this.Info_Array["URL"], % HTMLFile_loc
-		Sleep 100
-		FileRead, The_MemoryFile, % HTMLFile_loc
+		/* 
+			;Old slow way of downloading pages
+			;FileDelete, % HTMLFile_loc
+			;UrlDownloadToFile, % this.Info_Array["URL"], % HTMLFile_loc
+			;Sleep 100
+			;FileRead, The_MemoryFile, % HTMLFile_loc
+		*/
 		
+		;Download Page to memory
+		The_MemoryFile := ""
+		The_MemoryFile := Fn_DownloadtoFile(this.Info_Array["URL"])
 		
+		;Try to understand what state the page is in
 		this.Info_Array["CurrentStatus"] := "No Match"
-		
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(http:\/\/maintenance\.tvg\.com\/)")
 		If (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "MainenancePage"

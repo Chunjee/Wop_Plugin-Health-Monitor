@@ -80,17 +80,15 @@ Sb_CheckDVRs()
 
 Class DVR {
 	
-	__New(para_Name) {
-		this.GUIBox := M
-		
+	__New(para_Name) {		
 		this.Info_Array := []
 		this.Info_Array["Name"] := para_Name
 		this.Info_Array["endpoint"] := "http://" para_Name ".tvgops.tvgnetwork.local/ivr/rest"
 		
+		;Not really needed... consider removal
 		this.Info_Array["JSON_Status"] := "null"
 		this.Info_Array["JSON_Statistics"] := "null"
 		this.Info_Array["CurrentStatus"] := "null"
-		;Msgbox, % para_Name . " created!"
 	}
 	
 	CreateButton(hWnd) {
@@ -106,7 +104,6 @@ Class DVR {
 		
 		SinceLastError := SecondsSinceLastError
 		Measurement = seconds
-		
 		
 		If (SecondsSinceLastError > 60) {
 			SinceLastError := floor(SecondsSinceLastError / 60)
