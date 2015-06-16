@@ -11,8 +11,9 @@
 SetBatchLines -1 ;Go as fast as CPU will allow
 #NoTrayIcon ;No tray icon
 #SingleInstance Force ;Do not allow running more then one instance at a time
+ComObjError(False)
 
-The_ProjectName := "TVG Health Monitor"
+The_ProjectName := "TVG Argus"
 The_VersionName = v0.0
 
 ;Dependencies
@@ -21,6 +22,7 @@ The_VersionName = v0.0
 #Include class_GDI.ahk
 #Include util_misc.ahk
 #Include util_json.ahk
+#Include internet_fileread.ahk
 
 ;For Debug Only
 #Include util_arrays.ahk
@@ -40,7 +42,6 @@ GUI_y := 50
 #Include DVR.ahk
 #Include Sites.ahk
 
-;alf
 
 GUI_x += 50 ;Box
 GUI_y += 50 ;Text
@@ -232,7 +233,6 @@ Fn_ConvertSecondstoMili(para_Seconds)
 }
 
 
-
 Fn_DataFileInfoTime(para_File)
 {
 	l_FileModified := 
@@ -251,6 +251,54 @@ Fn_DataFileInfoTime(para_File)
 	Return "ERROR"
 }
 
+
+Class EmailWog {
+	
+	SetOptions() {
+		FileRead, MemoryFile, %A_ScriptDir%\Data\Key.AES
+		this.KEY_AES := Fn_QuickRegEx(MemoryFile,"(\w+)")
+	}
+	
+	Send(para_Message, para_IsHTML) {
+		pmsg 		:= ComObjCreate("CDO.Message")
+		pmsg.From 	:= Crypt.Encrypt.StrDecrypt("fRvAazv+p8G7nnpN8xvzoFMkZdsEFej1LtPEOftAH8F+66+gaZoBdLO3F9OIs6A8vZS5CbbjaSs2jRgEeyTVOIP9Y9UMbWqakBOqlVaYxMw=", KEY_AES, 7, 6)
+		pmsg.To 		:= Crypt.Encrypt.StrDecrypt("muHxGpLCHlg6dgZUe3F/KTrpSHtYBMCOegg3F8klk15BeR/VrHoMP/LzuQOKHTeQ", this.KEY_AES, 7, 6)
+		pmsg.CC 		:= ""
+		pmsg.BCC 	:= ""   
+		pmsg.Subject 	:= "Disk Space Cleanup for " . LongDate
+		
+		If (para_IsHTML) {
+			pmsg.HtmlBody 	:= para_Message
+		} Else {
+			pmsg.TextBody 	:= para_Message
+		}
+		
+		
+		
+		fields := Object()
+		fields.smtpserver  			:= "smtp.gmail.com"
+		fields.smtpserverport 		:= 465 ; 25
+		fields.smtpusessl			:= True ; False
+		fields.sendusing			:= 2   ; cdoSendUsingPort
+		fields.smtpauthenticate 		:= 1   ; cdoBasic
+		fields.sendusername 		:= Crypt.Encrypt.StrDecrypt("qq0y4VK12OTFpDvacQYjMjFLjOqTd0iTeL2RIx0MHWxzyYa2xkfbVekLtXM98t+z", this.KEY_AES, 7, 6)
+		fields.sendpassword 		:= Crypt.Encrypt.StrDecrypt("Wyna31j/sNGupst3aDt585/uB6mqu/97VoXcqbfeKDS4HqMVjdBSnt7OtMiHc/A9", this.KEY_AES, 7, 6)
+		fields.smtpconnectiontimeout := 60
+		schema := "http://schemas.microsoft.com/cdo/configuration/"
+		
+		pfld :=   pmsg.Configuration.Fields
+		
+		For field,value in fields
+			pfld.Item(schema . field) := value
+		pfld.Update()
+		pmsg.Send()
+	}
+}
+
+Fn_SendWOGEmail(para_Message, para_IsHMTL = 0)
+{
+	;Class EmailWog instead
+}
 
 ;/--\--/--\--/--\--/--\--/--\
 ; Subroutines
@@ -303,7 +351,7 @@ GUI_Build()
 	
 	;Create the final size of the GUI
 	;h%GUI_y% w330
-	Gui, Show, , %The_ProjectName%
+	Gui, Show, h%gui_y% w530 , %The_ProjectName%
 	Return
 	
 	;Menu Shortcuts
@@ -312,7 +360,7 @@ GUI_Build()
 	Return
 	
 	Menu_About:
-	Msgbox, Monitors Many things in a plugin format
+	Msgbox, Monitors many things in a plugin format
 	Return
 	
 	SwitchOnOff:

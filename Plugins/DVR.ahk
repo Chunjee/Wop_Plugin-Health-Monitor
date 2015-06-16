@@ -29,14 +29,14 @@ Loop, Read, %A_ScriptDir%\plugins\DVR.txt
 	;Might be needed later if we want clickable buttons
 	;DVRButton%A_Index% := New CustomButton(hWnd)
 }
-gui_y += 160
+gui_y += 140
 
 ;Draw Box around this plugin
 height += 130
+Gui, Font, s12 w700, Arial
 Gui, Add, GroupBox, x6 y%gui_orginaly% w510 h%height%, DVR
+Gui, Font
 
-
-Gui, Show, h1000 w530 , %The_ProjectName%
 
 ;Debug options
 ;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)

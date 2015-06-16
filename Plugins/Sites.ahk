@@ -31,14 +31,14 @@ Loop, Read, %A_ScriptDir%\plugins\Sites.txt
 		SiteTop_Array[A_Index] := Site%A_Index%
 	}
 }
-gui_y += 160
+gui_y += 80
 
 ;Draw Box around this plugin
 height += 130
+
+Gui, Font, s12 w700, Arial
 Gui, Add, GroupBox, x6 y%gui_orginaly% w510 h%height%, Sites
-
-
-Gui, Show, h600 w530 , %The_ProjectName%
+Gui, Font
 
 ;Debug options
 ;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
