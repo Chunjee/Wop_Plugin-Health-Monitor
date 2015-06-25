@@ -13,7 +13,10 @@ DVRTop_Array := []
 Loop, Read, %A_ScriptDir%\plugins\DVR.txt
 {
 	;Create the DVR Object for each
-	DVR%A_Index% := New DVR(A_LoopReadLine)
+	Name := Fn_QuickRegEx(A_LoopReadLine,"Name:(\w+)")
+	BaseURL := Fn_QuickRegEx(A_LoopReadLine,"Location:(\w+)")
+	
+	DVR%A_Index% := New DVR(Name,BaseURL)
 	
 	;Create GUI box for each DVR
 	Gui, Add, Progress, x%gui_x% y%gui_y% w100 h100 hWndhWnd, 100
@@ -70,7 +73,7 @@ Sb_CheckDVRs()
 		
 		;Update GUI Box of each DVR
 		DVR%A_Index%.UpdateGUI()
-		;DVR%A_Index%.SetOptimal()
+		DVR%A_Index%.SetOptimal()
 	}
 	;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
 	Return
@@ -80,10 +83,10 @@ Sb_CheckDVRs()
 
 Class DVR {
 	
-	__New(para_Name) {		
+	__New(para_Name,para_Location) {		
 		this.Info_Array := []
 		this.Info_Array["Name"] := para_Name
-		this.Info_Array["endpoint"] := "http://" para_Name ".tvgops.tvgnetwork.local/ivr/rest"
+		this.Info_Array["endpoint"] := "http://" . para_Location . ".tvgops.tvgnetwork.local/ivr/rest"
 		
 		;Not really needed... consider removal
 		this.Info_Array["JSON_Status"] := "null"
@@ -97,46 +100,6 @@ Class DVR {
 		this.DrawDefault()
 	}
 	
-	UpdateGUI() {
-		
-		;Update the GUIBox depending on the status of the DVR
-		SecondsSinceLastError := this.Info_Array["SecondsSinceLastError"]
-		
-		SinceLastError := SecondsSinceLastError
-		Measurement = seconds
-		
-		If (SecondsSinceLastError > 60) {
-			SinceLastError := floor(SecondsSinceLastError / 60)
-			Measurement = mins
-		}
-		If (SecondsSinceLastError > 3600) {
-			SinceLastError := floor(SecondsSinceLastError / 3600)
-			Measurement = hours
-		}
-		If (SecondsSinceLastError > 86400) {
-			SinceLastError := floor(SecondsSinceLastError / 86400)
-			Measurement = days
-		}
-		If (SecondsSinceLastError = "") {
-			SinceLastError := "No Errors"
-			Measurement =
-		}
-		
-		CurrentUsage := this.Info_Array["UsagePercent"]
-		
-		CombinedText := "`n" . SinceLastError . " " . Measurement . "`n" . CurrentUsage . "%"
-		
-		
-		
-		CurrentStatus := this.Info_Array["CurrentStatus"]
-		If (CurrentStatus = 2) {
-			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 0x000000, 18) ;Green Online
-		} Else {
-			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 0x000000, 18) ;RED ???
-		}
-		
-	}
-	
 	DrawDefault()
 	{
 		this.Draw("UnChecked", Fn_RGB("0xFFFFFF"), 0x000000, 18) ;White Unchecked
@@ -148,10 +111,10 @@ Class DVR {
 		
 		critical
 		this.GDI.FillRectangle(0, 0, this.GDI.CliWidth, this.GDI.CliHeight, Color, TextColor)
-		this.GDI.DrawText(0, 0, 100, 50, this.Info_Array["Name"], TextColor, "Times New Roman", 12, "CC")
-		this.GDI.DrawText(0, 20, 100, 50, TextArray[1], TextColor, "Impact", TextSize, "CC")
-		this.GDI.DrawText(0, 40, 100, 50, TextArray[2], TextColor, "Impact", TextSize, "CC")
-		this.GDI.DrawText(0, 60, 100, 50, TextArray[3], TextColor, "Impact", TextSize, "CC")
+		this.GDI.DrawText(0, 0, 100, 50, this.Info_Array["Name"], TextColor, "Times New Roman", 33, "CC")
+		this.GDI.DrawText(0, 20, 100, 50, TextArray[1], TextColor, "Consolas", TextSize, "CC")
+		this.GDI.DrawText(0, 40, 100, 50, TextArray[2], TextColor, "Consolas", TextSize, "CC")
+		this.GDI.DrawText(0, 60, 100, 50, TextArray[3], TextColor, "Consolas", TextSize, "CC")
 		this.GDI.BitBlt()
 	}
 	
@@ -198,6 +161,46 @@ Class DVR {
 			this.Info_Array["ActiveChannels"] := Response.ReturnResult.ActiveChannels
 			this.Info_Array["UsagePercent"] := floor((this.Info_Array["ActiveChannels"] / this.Info_Array["TotalChannels"]) * 100)
 		}
+	}
+	
+	UpdateGUI() {
+		
+		;Update the GUIBox depending on the status of the DVR
+		SecondsSinceLastError := this.Info_Array["SecondsSinceLastError"]
+		
+		SinceLastError := SecondsSinceLastError
+		Measurement = seconds
+		
+		If (SecondsSinceLastError > 60) {
+			SinceLastError := floor(SecondsSinceLastError / 60)
+			Measurement = mins
+		}
+		If (SecondsSinceLastError > 3600) {
+			SinceLastError := floor(SecondsSinceLastError / 3600)
+			Measurement = hours
+		}
+		If (SecondsSinceLastError > 86400) {
+			SinceLastError := floor(SecondsSinceLastError / 86400)
+			Measurement = days
+		}
+		If (SecondsSinceLastError = "") {
+			SinceLastError := "No Errors"
+			Measurement =
+		}
+		
+		CurrentUsage := this.Info_Array["UsagePercent"]
+		
+		CombinedText := "`n" . SinceLastError . " " . Measurement . "`n" . CurrentUsage . "%"
+		
+		
+		
+		CurrentStatus := this.Info_Array["CurrentStatus"]
+		If (CurrentStatus = 2) {
+			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 0x000000, 18) ;Green Online
+		} Else {
+			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 0x000000, 18) ;RED ???
+		}
+		
 	}
 	
 	SetOptimal() {

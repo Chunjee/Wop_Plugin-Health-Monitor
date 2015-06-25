@@ -24,6 +24,11 @@ Loop, Read, %A_ScriptDir%\plugins\Sites.txt
 		Gui, Show, w630 , %The_ProjectName%
 		gui_x += 120
 		
+		if(gui_x > 400) {
+			gui_x = 30
+			gui_y += 110
+			height += 110
+		}
 		;Change to a re-drawable gui for the Site
 		Site%A_Index%.CreateButton(hWnd)
 		
@@ -125,7 +130,7 @@ Class SiteMonitor {
 		critical
 		this.GDI.FillRectangle(0, 0, this.GDI.CliWidth, this.GDI.CliHeight, Color, TextColor)
 		this.GDI.DrawText(0, 0, 100, 50, this.Info_Array["Name"], TextColor, "Times New Roman", 33, "CC")
-		this.GDI.DrawText(0, 20, 100, 50, TextArray[1], TextColor, "Impact", TextSize, "CC")
+		this.GDI.DrawText(0, 20, 100, 50, TextArray[1], TextColor, "Consolas", TextSize, "CC")
 		this.GDI.BitBlt()
 	}
 	
@@ -145,15 +150,37 @@ Class SiteMonitor {
 		The_MemoryFile := ""
 		The_MemoryFile := Fn_DownloadtoFile(this.Info_Array["URL"])
 		
-		;Try to understand what state the page is in
+		;Try to understand what state the page is in but assume Check unsuccessful
 		this.Info_Array["CurrentStatus"] := "No Match"
+		
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(http:\/\/maintenance\.tvg\.com\/)")
-		If (PageCheck != "null") {
+		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "MainenancePage"
 		}
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\/\/nodejs\.tvg\.com\/deposit\/quick)")
-		If (PageCheck != "null") {
+		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Online"
+		}
+		
+		if (InStr(this.Info_Array["Name"],"Touch")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(!isAndroidApp)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+			}
+		}
+		
+		if (InStr(this.Info_Array["Name"],"HRTV")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Follow HRTV)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+			}
+		}
+		
+		if (InStr(this.Info_Array["Name"],"Betfair")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(function openLobby)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+			}
 		}
 	}
 }

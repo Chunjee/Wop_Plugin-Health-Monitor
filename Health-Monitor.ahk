@@ -49,6 +49,7 @@ GUI_y += 50 ;Text
 
 ;;Show GUI if all creation was successful
 GUI_Build()
+Gui +AlwaysOnTop
 Return
 
 
