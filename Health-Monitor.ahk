@@ -14,7 +14,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False)
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.0
+The_VersionName = v0.1
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -41,6 +41,7 @@ GUI_y := 50
 #Include %A_ScriptDir%\Plugins
 #Include DVR.ahk
 #Include Sites.ahk
+#Include SVC.ahk
 
 
 GUI_x += 50 ;Box
@@ -334,7 +335,7 @@ GUI_Build()
 	Gui, Font, s14 w70, Arial
 	Gui, Add, Text, x2 y4 w500 h40 +Center, %The_ProjectName%
 	Gui, Font, s10 w70, Arial
-	Gui, Add, Text, x476 y0 w50 h20 +Right, %The_VersionName%
+	Gui, Add, Text, x946 y0 w50 h20 +Right, %The_VersionName%
 	
 	;Menu
 	Menu, FileMenu, Add, &Update Now, Update
@@ -352,7 +353,7 @@ GUI_Build()
 	
 	;Create the final size of the GUI
 	;h%GUI_y% w330
-	Gui, Show, h%gui_y% w530 , %The_ProjectName%
+	Gui, Show, h%gui_y% w1000 , %The_ProjectName%
 	Return
 	
 	;Menu Shortcuts

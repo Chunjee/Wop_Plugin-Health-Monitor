@@ -9,6 +9,8 @@ gui_x = 30
 height = 0
 DVRTop_Array := []
 
+endboxsize := 100 * 1.6
+DVR_BoxSize := endboxsize
 ;Read from DVR.txt about what DVRs to monitor
 Loop, Read, %A_ScriptDir%\plugins\DVR.txt
 {
@@ -19,9 +21,9 @@ Loop, Read, %A_ScriptDir%\plugins\DVR.txt
 	DVR%A_Index% := New DVR(Name,BaseURL)
 	
 	;Create GUI box for each DVR
-	Gui, Add, Progress, x%gui_x% y%gui_y% w100 h100 hWndhWnd, 100
-	Gui, Show, w630 , %The_ProjectName%
-	gui_x += 120
+	Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
+	Gui, Show, w1000 , %The_ProjectName%
+	gui_x += endboxsize + 20
 	
 	;Change to a re-drawable gui for the DVR
 	DVR%A_Index%.CreateButton(hWnd)
@@ -32,12 +34,12 @@ Loop, Read, %A_ScriptDir%\plugins\DVR.txt
 	;Might be needed later if we want clickable buttons
 	;DVRButton%A_Index% := New CustomButton(hWnd)
 }
-gui_y += 140
+gui_y += endboxsize + 20
 
 ;Draw Box around this plugin
-height += 130
+height += endboxsize + 40
 Gui, Font, s12 w700, Arial
-Gui, Add, GroupBox, x6 y%gui_orginaly% w510 h%height%, DVR
+Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, DVR
 Gui, Font
 
 
@@ -59,10 +61,11 @@ SetTimer, CheckDVRs, 2000
 
 Sb_CheckDVRs()
 {
-	
+	global
 	CheckDVRs:
 	SetTimer, CheckDVRs, -60000
-	global DVRTop_Array
+	
+	endboxsize := DVR_BoxSize
 	
 	;Update the status and stats of each DVR
 	Loop, % DVRTop_Array.MaxIndex() {
@@ -102,19 +105,27 @@ Class DVR {
 	
 	DrawDefault()
 	{
-		this.Draw("UnChecked", Fn_RGB("0xFFFFFF"), 0x000000, 18) ;White Unchecked
+		this.Draw("UnChecked", Fn_RGB("0xFFFFFF"), 18) ;White Unchecked
 	}
 	
-	Draw(Text, Color, TextColor, TextSize = 18)
+	Draw(para_Text, para_Color, para_TextSize = 18)
 	{
-		TextArray := StrSplit(Text,"`n")
+		global endboxsize
+		TextArray := StrSplit(para_Text,"`n")
 		
 		critical
-		this.GDI.FillRectangle(0, 0, this.GDI.CliWidth, this.GDI.CliHeight, Color, TextColor)
-		this.GDI.DrawText(0, 0, 100, 50, this.Info_Array["Name"], TextColor, "Times New Roman", 33, "CC")
-		this.GDI.DrawText(0, 20, 100, 50, TextArray[1], TextColor, "Consolas", TextSize, "CC")
-		this.GDI.DrawText(0, 40, 100, 50, TextArray[2], TextColor, "Consolas", TextSize, "CC")
-		this.GDI.DrawText(0, 60, 100, 50, TextArray[3], TextColor, "Consolas", TextSize, "CC")
+		this.GDI.FillRectangle(0, 0, this.GDI.CliWidth, this.GDI.CliHeight, para_Color, "0x000000")
+		
+		x := 30
+		Loop, % TextArray.MaxIndex() {
+			If (A_Index = 1) {
+				;Always draw first line specifically and with para_TextSize
+				this.GDI.DrawText(0, 0, endboxsize, 50, this.Info_Array["Name"], "0x000000", "Times New Roman", 40, "CC")
+			}
+			;Following lines are drawn generically
+			this.GDI.DrawText(0, x, endboxsize, 50, TextArray[A_Index], "0x000000", "Consolas", para_TextSize, "CC")
+			x += 26
+		}
 		this.GDI.BitBlt()
 	}
 	
@@ -190,15 +201,15 @@ Class DVR {
 		
 		CurrentUsage := this.Info_Array["UsagePercent"]
 		
-		CombinedText := "`n" . SinceLastError . " " . Measurement . "`n" . CurrentUsage . "%"
+		CombinedText := "`n" . SinceLastError . " " . Measurement . "`n Usage: " . CurrentUsage . "%"
 		
 		
 		
 		CurrentStatus := this.Info_Array["CurrentStatus"]
 		If (CurrentStatus = 2) {
-			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 0x000000, 18) ;Green Online
+			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 30) ;Green Online
 		} Else {
-			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 0x000000, 18) ;RED ???
+			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED ???
 		}
 		
 	}
