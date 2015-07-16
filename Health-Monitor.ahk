@@ -14,7 +14,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False)
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.1
+The_VersionName = v0.1.1
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -54,19 +54,61 @@ Gui +AlwaysOnTop
 Return
 
 
-#e::
-Array_Gui(TPAS_Array)
-Return
-
-
 Update:
 Return
 
 
 ;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
-;Functions
+;Classes
 ;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
 
+Class EmailWog {
+	
+	SetOptions() {
+		FileRead, MemoryFile, %A_ScriptDir%\Data\Key.AES
+		this.KEY_AES := Fn_QuickRegEx(MemoryFile,"(\w+)")
+	}
+	
+	Send(para_Message, para_IsHTML) {
+		pmsg 		:= ComObjCreate("CDO.Message")
+		pmsg.From 	:= Crypt.Encrypt.StrDecrypt("fRvAazv+p8G7nnpN8xvzoFMkZdsEFej1LtPEOftAH8F+66+gaZoBdLO3F9OIs6A8vZS5CbbjaSs2jRgEeyTVOIP9Y9UMbWqakBOqlVaYxMw=", KEY_AES, 7, 6)
+		pmsg.To 		:= Crypt.Encrypt.StrDecrypt("muHxGpLCHlg6dgZUe3F/KTrpSHtYBMCOegg3F8klk15BeR/VrHoMP/LzuQOKHTeQ", this.KEY_AES, 7, 6)
+		pmsg.CC 		:= ""
+		pmsg.BCC 	:= ""   
+		pmsg.Subject 	:= "Disk Space Cleanup for " . LongDate
+		
+		if (para_IsHTML) {
+			pmsg.HtmlBody 	:= para_Message
+		} else {
+			pmsg.TextBody 	:= para_Message
+		}
+		
+		
+		
+		fields := Object()
+		fields.smtpserver  			:= "smtp.gmail.com"
+		fields.smtpserverport 		:= 465 ; 25
+		fields.smtpusessl			:= True ; False
+		fields.sendusing			:= 2   ; cdoSendUsingPort
+		fields.smtpauthenticate 		:= 1   ; cdoBasic
+		fields.sendusername 		:= Crypt.Encrypt.StrDecrypt("qq0y4VK12OTFpDvacQYjMjFLjOqTd0iTeL2RIx0MHWxzyYa2xkfbVekLtXM98t+z", this.KEY_AES, 7, 6)
+		fields.sendpassword 		:= Crypt.Encrypt.StrDecrypt("Wyna31j/sNGupst3aDt585/uB6mqu/97VoXcqbfeKDS4HqMVjdBSnt7OtMiHc/A9", this.KEY_AES, 7, 6)
+		fields.smtpconnectiontimeout := 60
+		schema := "http://schemas.microsoft.com/cdo/configuration/"
+		
+		pfld :=   pmsg.Configuration.Fields
+		
+		for field,value in fields
+			pfld.Item(schema . field) := value
+		pfld.Update()
+		pmsg.Send()
+	}
+}
+
+
+;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
+;Functions
+;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
 
 Fn_UpdateProgressBar(para_ProgressBarVar,para_Max,para_Current,para_Index,para_ColorThreshold)
 {
@@ -181,8 +223,7 @@ Fn_Percent2Color(para_InputNumber,para_ThresholdPercent)
 	If (para_InputNumber > para_ThresholdPercent + 1) {
 		Return "ffc002"
 	}
-	If (para_InputNumber > para_ThresholdPercent) ;Yellow
-	{
+	If (para_InputNumber > para_ThresholdPercent) { ;Yellow
 		Return "ffc300"
 	}
 	If (para_InputNumber > para_ThresholdPercent - 1) {
@@ -253,55 +294,6 @@ Fn_DataFileInfoTime(para_File)
 	Return "ERROR"
 }
 
-
-Class EmailWog {
-	
-	SetOptions() {
-		FileRead, MemoryFile, %A_ScriptDir%\Data\Key.AES
-		this.KEY_AES := Fn_QuickRegEx(MemoryFile,"(\w+)")
-	}
-	
-	Send(para_Message, para_IsHTML) {
-		pmsg 		:= ComObjCreate("CDO.Message")
-		pmsg.From 	:= Crypt.Encrypt.StrDecrypt("fRvAazv+p8G7nnpN8xvzoFMkZdsEFej1LtPEOftAH8F+66+gaZoBdLO3F9OIs6A8vZS5CbbjaSs2jRgEeyTVOIP9Y9UMbWqakBOqlVaYxMw=", KEY_AES, 7, 6)
-		pmsg.To 		:= Crypt.Encrypt.StrDecrypt("muHxGpLCHlg6dgZUe3F/KTrpSHtYBMCOegg3F8klk15BeR/VrHoMP/LzuQOKHTeQ", this.KEY_AES, 7, 6)
-		pmsg.CC 		:= ""
-		pmsg.BCC 	:= ""   
-		pmsg.Subject 	:= "Disk Space Cleanup for " . LongDate
-		
-		If (para_IsHTML) {
-			pmsg.HtmlBody 	:= para_Message
-		} Else {
-			pmsg.TextBody 	:= para_Message
-		}
-		
-		
-		
-		fields := Object()
-		fields.smtpserver  			:= "smtp.gmail.com"
-		fields.smtpserverport 		:= 465 ; 25
-		fields.smtpusessl			:= True ; False
-		fields.sendusing			:= 2   ; cdoSendUsingPort
-		fields.smtpauthenticate 		:= 1   ; cdoBasic
-		fields.sendusername 		:= Crypt.Encrypt.StrDecrypt("qq0y4VK12OTFpDvacQYjMjFLjOqTd0iTeL2RIx0MHWxzyYa2xkfbVekLtXM98t+z", this.KEY_AES, 7, 6)
-		fields.sendpassword 		:= Crypt.Encrypt.StrDecrypt("Wyna31j/sNGupst3aDt585/uB6mqu/97VoXcqbfeKDS4HqMVjdBSnt7OtMiHc/A9", this.KEY_AES, 7, 6)
-		fields.smtpconnectiontimeout := 60
-		schema := "http://schemas.microsoft.com/cdo/configuration/"
-		
-		pfld :=   pmsg.Configuration.Fields
-		
-		For field,value in fields
-			pfld.Item(schema . field) := value
-		pfld.Update()
-		pmsg.Send()
-	}
-}
-
-Fn_SendWOGEmail(para_Message, para_IsHMTL = 0)
-{
-	;Class EmailWog instead
-}
-
 ;/--\--/--\--/--\--/--\--/--\
 ; Subroutines
 ;\--/--\--/--\--/--\--/--\--/
@@ -358,7 +350,7 @@ GUI_Build()
 	
 	;Menu Shortcuts
 	Menu_Confluence:
-	Run http://confluence.tvg.com/display/wog/Ops+Tool+-+Tote+Health+Monitor
+	Run http://confluence.tvg.com/
 	Return
 	
 	Menu_About:

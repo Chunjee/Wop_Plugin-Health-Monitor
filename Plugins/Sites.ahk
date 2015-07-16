@@ -15,7 +15,7 @@ Site_BoxSize := endboxsize
 Loop, Read, %A_ScriptDir%\plugins\Sites.txt
 {
 	;Grab the Name and Url out of each line.
-	The_SiteName := Fn_QuickRegEx(A_LoopReadLine,"Name:(\w+)")
+	The_SiteName := Fn_QuickRegEx(A_LoopReadLine,"Name:(\S+)")
 	The_SiteURL := Fn_QuickRegEx(A_LoopReadLine,"URL:([\w:\/\.]+)")
 	;Create the DVR Object for each
 	If (The_SiteName != "null" && The_SiteURL != "null") {
@@ -164,8 +164,7 @@ Class SiteMonitor {
 		;Download Page to memory
 		The_MemoryFile := ""
 		The_MemoryFile := Fn_DownloadtoFile(this.Info_Array["URL"])
-		
-		;Try to understand what state the page is in but assume Check unsuccessful
+		;Try to understand what state the page is in but assume "Check unsuccessful"
 		this.Info_Array["CurrentStatus"] := "Unknown"
 		
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(maintenance\.tvg\.com\/)")
@@ -181,12 +180,13 @@ Class SiteMonitor {
 		;Touch Sites
 		if (InStr(this.Info_Array["Name"],"Touch")) {
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(!isAndroidApp)")
+			Clipboard := PageCheck
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
 			}
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(showing maintenance message)")
-			if (PageCheck != "null") {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(null)")
+			if (PageCheck = "null") {
 				this.Info_Array["CurrentStatus"] := "MainenancePage"
 				return
 			}
@@ -207,6 +207,16 @@ Class SiteMonitor {
 				return
 			}
 		}
+		;Equibase Store
+		if (InStr(this.Info_Array["Name"],"Eq-Store")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(TRACK_ID=)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+				return
+			} else {
+				this.Info_Array["CurrentStatus"] := "Offline"
+			}
+		}
 		;Neulion
 		if (InStr(this.Info_Array["Name"],"Neulion")) {
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(<track name=)")
@@ -218,7 +228,6 @@ Class SiteMonitor {
 		;Track Video Dropdown. Non-functional
 		if (InStr(this.Info_Array["Name"],"Dropdown")) {
 			Msgbox, % The_MemoryFile
-			Clipboard := The_MemoryFile
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\[\])")
 			if (PageCheck = "null") {
 				this.Info_Array["CurrentStatus"] := "Online"

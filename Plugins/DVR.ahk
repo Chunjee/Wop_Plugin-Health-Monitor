@@ -76,7 +76,9 @@ Sb_CheckDVRs()
 		
 		;Update GUI Box of each DVR
 		DVR%A_Index%.UpdateGUI()
-		DVR%A_Index%.SetOptimal()
+		
+		;Set Optimal
+		;DVR%A_Index%.SetOptimal()
 	}
 	;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
 	Return
@@ -86,7 +88,7 @@ Sb_CheckDVRs()
 
 Class DVR {
 	
-	__New(para_Name,para_Location) {		
+	__New(para_Name,para_Location) {
 		this.Info_Array := []
 		this.Info_Array["Name"] := para_Name
 		this.Info_Array["endpoint"] := "http://" . para_Location . ".tvgops.tvgnetwork.local/ivr/rest"
@@ -118,7 +120,7 @@ Class DVR {
 		
 		x := 30
 		Loop, % TextArray.MaxIndex() {
-			If (A_Index = 1) {
+			if (A_Index = 1) {
 				;Always draw first line specifically and with para_TextSize
 				this.GDI.DrawText(0, 0, endboxsize, 50, this.Info_Array["Name"], "0x000000", "Times New Roman", 40, "CC")
 			}
@@ -167,7 +169,7 @@ Class DVR {
 		
 		;Convert Response to an Object and extract the CurrentStatus
 		Response := Fn_JSONtoOBJ(Staging.ResponseText)
-		If (Response.ResultCode.Name = "Success") {
+		if (Response.ResultCode.Name = "Success") {
 			this.Info_Array["TotalChannels"] := Response.ReturnResult.TotalChannels
 			this.Info_Array["ActiveChannels"] := Response.ReturnResult.ActiveChannels
 			this.Info_Array["UsagePercent"] := floor((this.Info_Array["ActiveChannels"] / this.Info_Array["TotalChannels"]) * 100)
@@ -182,19 +184,19 @@ Class DVR {
 		SinceLastError := SecondsSinceLastError
 		Measurement = seconds
 		
-		If (SecondsSinceLastError > 60) {
+		if (SecondsSinceLastError > 60) {
 			SinceLastError := floor(SecondsSinceLastError / 60)
 			Measurement = mins
 		}
-		If (SecondsSinceLastError > 3600) {
+		if (SecondsSinceLastError > 3600) {
 			SinceLastError := floor(SecondsSinceLastError / 3600)
 			Measurement = hours
 		}
-		If (SecondsSinceLastError > 86400) {
+		if (SecondsSinceLastError > 86400) {
 			SinceLastError := floor(SecondsSinceLastError / 86400)
 			Measurement = days
 		}
-		If (SecondsSinceLastError = "") {
+		if (SecondsSinceLastError = "") {
 			SinceLastError := "No Errors"
 			Measurement =
 		}
@@ -206,10 +208,11 @@ Class DVR {
 		
 		
 		CurrentStatus := this.Info_Array["CurrentStatus"]
-		If (CurrentStatus = 2) {
+		if (CurrentStatus = 2) {
 			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 30) ;Green Online
 		} Else {
 			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED ???
+			this.SetOptimal()
 		}
 		
 	}
