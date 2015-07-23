@@ -14,6 +14,9 @@ Site_BoxSize := endboxsize
 ;Read from DVR.txt about what DVRs to monitor
 Loop, Read, %A_ScriptDir%\plugins\Sites.txt
 {
+	If (InStr(A_LoopReadLine,";")) {
+		Continue
+	}
 	;Grab the Name and Url out of each line.
 	The_SiteName := Fn_QuickRegEx(A_LoopReadLine,"Name:(\S+)")
 	The_SiteURL := Fn_QuickRegEx(A_LoopReadLine,"URL:([\w:\/\.]+)")
@@ -26,7 +29,7 @@ Loop, Read, %A_ScriptDir%\plugins\Sites.txt
 		Gui, Show, w1000 , %The_ProjectName%
 		gui_x += endboxsize + 10
 		
-		if(gui_x >= 870) {
+		if (gui_x >= 870) {
 			gui_x = 30
 			gui_y += endboxsize + 10
 			height += endboxsize + 30
@@ -163,7 +166,15 @@ Class SiteMonitor {
 		
 		;Download Page to memory
 		The_MemoryFile := ""
-		The_MemoryFile := Fn_DownloadtoFile(this.Info_Array["URL"])
+
+		;Try to download the page 4 times and quit on first success
+		Loop, 4 {
+			The_MemoryFile := Fn_DownloadtoFile(this.Info_Array["URL"])
+			If (The_MemoryFile != "null" || A_Index = 4) {
+				Break
+			}
+		}
+		
 		;Try to understand what state the page is in but assume "Check unsuccessful"
 		this.Info_Array["CurrentStatus"] := "Unknown"
 		
@@ -175,7 +186,6 @@ Class SiteMonitor {
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Online"
 		}
-		
 		;SPECIAL CASES BELOW HERE: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		;Touch Sites
 		if (InStr(this.Info_Array["Name"],"Touch")) {

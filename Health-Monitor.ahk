@@ -14,7 +14,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False)
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.1.1
+The_VersionName = v0.2
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
