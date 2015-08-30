@@ -1,14 +1,29 @@
 ﻿Fn_DownloadtoFile(para_URL)
 {
 	httpObject:=ComObjCreate("WinHttp.WinHttpRequest.5.1") ;Create the Object
-	httpObject.Open("GET",para_URL) ;Open communication
+	httpObject.Open("GET",para_URL, false) ;Open communication
 	httpObject.Send() ;Send the "get" request
+
+
 	Response := httpObject.ResponseText ;Set the "text" variable to the response
+
 	If (Response != "") {
 		Return % Response
 	} Else {
 		Return "null"
 	}
+}
+
+Fn_IOdependantDownload(para_URL)
+{
+	;Obviously this is an old way. when more time is available: use an InternetExplorer.Application object, and try pulling from there
+	IO_file = %A_ScriptDir%\Data\Temp\data.txt
+	FileDelete, % IO_file
+	UrlDownloadToFile, %para_URL%, % IO_file
+	Sleep 100
+	FileRead, MemoryFile, % IO_file
+	FileDelete, % IO_file
+	Return %MemoryFile%
 }
 
 
@@ -51,3 +66,5 @@ Fn_InternetFileRead( ByRef V, URL="", RB=0, bSz=1024, DLP="DLP", F=0x84000000 ) 
 ; to unload Wininet library without a handle.
 ;Fn_DllCall( "FreeLibrary", UInt,DllCall( "GetModuleHandle", Str,"wininet.dll") )
 ;Return
+
+

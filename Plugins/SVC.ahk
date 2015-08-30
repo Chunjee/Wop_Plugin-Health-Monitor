@@ -40,7 +40,7 @@ Loop, Read, %A_ScriptDir%\plugins\SVC.txt
 gui_y += endboxsize
 
 ;Draw Box around this plugin
-height += endboxsize
+height += endboxsize + 30
 
 Gui, Font, s12 w700, Arial
 Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, SVC
@@ -110,8 +110,17 @@ Class SVC {
 		;Update the GUIBox depending on the status
 		CombinedText := "`n" . ""
 		
-		If (this.Info_Array["CurrentStatus"] = "HEALTHY") {
+		if (this.Info_Array["CurrentStatus"] = "HEALTHY") {
 			this.Draw("Healthy" . CombinedText, Fn_RGB("0x009900"), 14) ;Green Online
+			Return
+		}
+		if (this.Info_Array["CurrentStatus"] = "TROUBLE") {
+			this.Draw("TROUBLE" . CombinedText, Fn_RGB("0xFF6600"), 14) ;Orange Offline
+			Return
+		}
+		if (this.Info_Array["CurrentStatus"] = "ERROR") {
+			CombinedText := "`n" . this.Info_Array["CurrentError"]
+			this.Draw("ERROR" . CombinedText, Fn_RGB("0xFF0000"), 14) ;Red Offline
 			Return
 		}
 		;All others failed
@@ -159,12 +168,22 @@ Class SVC {
 		
 		;Match Healthy
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "\x22Status\x22>(\w+)<")
-		
-		
 		if (PageCheck = "HEALTHY") {
 			this.Info_Array["CurrentStatus"] := "HEALTHY"
 		} Else {
-			FileAppend, % "`n" . this.Info_Array["HTMLPage"], % A_ScriptDir . "\SVCErrors.txt"
+			FileAppend, % "`n" . A_Now . "     -    " . this.Info_Array["HTMLPage"], % A_ScriptDir . "\SVCErrors.txt"
+		}
+
+		;Match Unavailable
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, ">(Service Unavailable)<")
+		if (PageCheck = "Service Unavailable") {
+			this.Info_Array["CurrentStatus"] := "TROUBLE"
+		}
+		;Match any listed error           Error">(.+)<\/span
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "Error\x22>(.+)<\/span")
+		if (PageCheck != "null") {
+			this.Info_Array["CurrentStatus"] := "ERROR"
+			this.Info_Array["CurrentError"] := PageCheck
 		}
 	}	
 }

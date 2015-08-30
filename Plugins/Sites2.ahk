@@ -7,22 +7,22 @@ gui_orginaly := gui_y
 gui_y += 20
 gui_x = 30
 height = 0
-SiteTop_Array := []
+SiteDirect_Array := []
 
 endboxsize := 100 * 1.4
-Site_BoxSize := endboxsize
+SiteDirect_BoxSize := endboxsize
 ;Read from DVR.txt about what DVRs to monitor
-Loop, Read, %A_ScriptDir%\plugins\Sites.txt
+Loop, Read, %A_ScriptDir%\plugins\Sites2.txt
 {
-	If (InStr(A_LoopReadLine,";")) {
+	if (InStr(A_LoopReadLine,";")) {
 		Continue
 	}
 	;Grab the Name and Url out of each line.
 	The_SiteName := Fn_QuickRegEx(A_LoopReadLine,"Name:(\S+)")
 	The_SiteURL := Fn_QuickRegEx(A_LoopReadLine,"URL:([\w:\/\.]+)")
 	;Create the DVR Object for each
-	If (The_SiteName != "null" && The_SiteURL != "null") {
-		Site%A_Index% := New SiteMonitor(The_SiteName, The_SiteURL)
+	if (The_SiteName != "null" && The_SiteURL != "null") {
+		SiteDirect%A_Index% := New SiteMonitorDirect(The_SiteName, The_SiteURL)
 		
 		;Add new line if max ammount of boxes reached
 		if (gui_x >= 870) {
@@ -37,10 +37,10 @@ Loop, Read, %A_ScriptDir%\plugins\Sites.txt
 		gui_x += endboxsize + 10
 		
 		;Change to a re-drawable gui for the Site
-		Site%A_Index%.CreateButton(hWnd)
+		SiteDirect%A_Index%.CreateButton(hWnd)
 		
 		;Add object to array for enumeration
-		SiteTop_Array[A_Index] := Site%A_Index%
+		SiteDirect_Array[A_Index] := SiteDirect%A_Index%
 	}
 }
 gui_y += endboxsize + 20
@@ -49,17 +49,17 @@ gui_y += endboxsize + 20
 height += endboxsize + 30
 
 Gui, Font, s12 w700, Arial
-Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Sites
+Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Sites2
 Gui, Font
 
 ;Debug options
 ;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
 ;FileAppend, %Alf%, %A_ScriptDir%\HUGE.JSON
-;Array_GUI(SiteTop_Array)
+;Array_GUI(SiteDirect_Array)
 
 
 
-SetTimer, CheckSites, 2000
+SetTimer, CheckSitesDirect, 2000
 
 ;OnMessage(0xF, "WM_PAINT")
 ;OnMessage(0x200, "WM_MOUSEMOVE")
@@ -68,32 +68,30 @@ SetTimer, CheckSites, 2000
 
 
 
-Sb_CheckSites()
+Sb_CheckSitesDirect()
 {
 	global
 	
-	CheckSites:
-	SetTimer, CheckSites, -60000
+	CheckSitesDirect:
+	SetTimer, CheckSitesDirect, -60000
 	;global SiteTop_Array
 	
-	endboxsize := Site_BoxSize
+	endboxsize := SiteDirect_BoxSize
 	
 	;Go through the list of sites
-	Loop, % SiteTop_Array.MaxIndex() {
-		
+	Loop, % SiteDirect_Array.MaxIndex() {
 		;Get Status and Statistics of each
-		Site%A_Index%.CheckStatus()
+		SiteDirect%A_Index%.CheckStatus()
 		
 		;Update GUI Box of each
-		Site%A_Index%.UpdateGUI()
+		SiteDirect%A_Index%.UpdateGUI()
 	}
-	;Clipboard := Fn_JSONfromOBJ(SiteTop_Array)
 	Return
 }
 
 
 
-Class SiteMonitor {
+Class SiteMonitorDirect {
 	
 	__New(para_Name, para_URL) {
 		
@@ -156,63 +154,88 @@ Class SiteMonitor {
 	
 	CheckStatus() {
 		;Download the page and try to understand what state it is in. ONLINE / MAINTENANCE / OTHER
-		;HTMLFile_loc := % A_ScriptDir . "\Data\Temp\" . this.Info_Array["Name"] . ".html"
-		;Msgbox, HTMLFile_loc
-		/* 
-			;Old slow way of downloading pages
-			;FileDelete, % HTMLFile_loc
-			;UrlDownloadToFile, % this.Info_Array["URL"], % HTMLFile_loc
-			;Sleep 100
-			;FileRead, The_MemoryFile, % HTMLFile_loc
-		*/
 		
 		;Download Page to memory
 		The_MemoryFile := ""
 
-
 		;Try to download the page 4 times and quit on first success
 		Loop, 4 {
-			The_MemoryFile := Fn_IOdependantDownload(this.Info_Array["URL"])
-			if (The_MemoryFile != "null" || A_Index = 4) {
+			The_MemoryFile := Fn_DownloadtoFile(this.Info_Array["URL"])
+			If (The_MemoryFile != "null" || A_Index = 4) {
 				Break
 			}
 		}
 		;Debug, check the downloaded HTML
-			;Clipboard = %The_MemoryFile%
+			;Clipboard := The_MemoryFile
 			;Msgbox, % The_MemoryFile
 		
 		;Try to understand what state the page is in but assume "Check unsuccessful"
 		this.Info_Array["CurrentStatus"] := "Unknown"
 		
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Important Notice)")
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(maintenance\.tvg\.com\/)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "MainenancePage"
-			Return
 		}
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(ainenance)")
-		if (PageCheck != "null") {
-			this.Info_Array["CurrentStatus"] := "MainenancePage"
-			Return
-		}
-
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(quickDepositUrl)")
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\/\/nodejs\.tvg\.com\/deposit\/quick)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Online"
-			Return
 		}
 		;SPECIAL CASES BELOW HERE: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		;Touch Sites
 		if (InStr(this.Info_Array["Name"],"Touch")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(touch-revamp)")
-			Clipboard := The_MemoryFile
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(!isAndroidApp)")
+
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
-				Return
+				return
 			}
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(please)")
 			if (PageCheck = "please") {
 				this.Info_Array["CurrentStatus"] := "MainenancePage"
-				Return
+				return
+			}
+		}
+		;HRTV
+		if (InStr(this.Info_Array["Name"],"HRTV")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Follow HRTV)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+				return
+			}
+		}
+		;Betfair
+		if (InStr(this.Info_Array["Name"],"Betfair")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(function openLobby)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+				return
+			}
+		}
+		;Equibase Store
+		if (InStr(this.Info_Array["Name"],"Eq-Store")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(TRACK_ID=)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+				return
+			} else {
+				this.Info_Array["CurrentStatus"] := "Offline"
+			}
+		}
+		;Neulion
+		if (InStr(this.Info_Array["Name"],"Neulion")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(<track name=)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+				return
+			}
+		}
+		;Track Video Dropdown. Non-functional~~~~~~~~~~
+		if (InStr(this.Info_Array["Name"],"Dropdown")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\[\])")
+			if (PageCheck = "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+			} else if (PageCheck = "[]") {
+				this.Info_Array["CurrentStatus"] := "Offline"
 			}
 		}
 	}

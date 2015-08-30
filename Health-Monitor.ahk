@@ -11,10 +11,10 @@
 SetBatchLines -1 ;Go as fast as CPU will allow
 #NoTrayIcon ;No tray icon
 #SingleInstance Force ;Do not allow running more then one instance at a time
-ComObjError(False)
+ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.2
+The_VersionName = v0.3
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -41,6 +41,7 @@ GUI_y := 50
 #Include %A_ScriptDir%\Plugins
 #Include DVR.ahk
 #Include Sites.ahk
+#Include Sites2.ahk
 #Include SVC.ahk
 
 

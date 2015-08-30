@@ -1,0 +1,4 @@
+Name:HRTV	URL:http://www.hrtv.com/
+Name:Betfair	URL:https://www.betfaircasino.com/
+Name:Neulion	URL:http://tvg.neulion.com/tvg/servlets/schedule
+Name:Eq-Store	URL:https://tvg.equibase.com/newsite2/tvgPlatinumPPProducts.cfm
