@@ -221,6 +221,16 @@ Class SiteMonitorDirect {
 				this.Info_Array["CurrentStatus"] := "Offline"
 			}
 		}
+		;Event Collector
+		if (InStr(this.Info_Array["Name"],"Event")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Untitled Page)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+				return
+			} else {
+				this.Info_Array["CurrentStatus"] := "Offline"
+			}
+		}
 		;Neulion
 		if (InStr(this.Info_Array["Name"],"Neulion")) {
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(<track name=)")
