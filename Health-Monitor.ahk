@@ -14,7 +14,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.4
+The_VersionName = v0.5
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -22,6 +22,8 @@ The_VersionName = v0.4
 #Include class_GDI.ahk
 #Include util_misc.ahk
 #Include util_json.ahk
+#Include ping.ahk
+#Include ping4.ahk
 #Include internet_fileread.ahk
 
 ;For Debug Only
@@ -42,6 +44,7 @@ GUI_y := 50
 #Include DVR.ahk
 #Include Sites.ahk
 #Include Sites2.ahk
+#Include Speed.ahk
 #Include SVC.ahk
 
 
@@ -51,7 +54,9 @@ GUI_y += 50 ;Text
 
 ;;Show GUI if all creation was successful
 GUI_Build()
-Gui +AlwaysOnTop
+	if(A_IsCompiled) {
+		Gui +AlwaysOnTop
+	}
 Return
 
 

@@ -210,9 +210,13 @@ Class DVR {
 		CurrentStatus := this.Info_Array["CurrentStatus"]
 		if (CurrentStatus = 2) {
 			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 30) ;Green Online
-		} Else {
+		} else {
 			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED ???
 			this.SetOptimal()
+
+			;Record error to text file
+			MachineName := this.Info_Array["Name"]
+			FileAppend, %A_YYYY%%A_MM%%A_DD% [%A_Hour%:%A_Min%] <%MachineName%> %CurrentStatus%`n`r, %A_ScriptDir%\Data\Errors.txt
 		}
 		
 	}
