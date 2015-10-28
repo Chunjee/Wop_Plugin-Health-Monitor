@@ -14,7 +14,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.5
+The_VersionName = v0.6
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -331,7 +331,7 @@ GUI_Build()
 	
 	;Title
 	Gui, Font, s14 w70, Arial
-	Gui, Add, Text, x2 y4 w500 h40 +Center, %The_ProjectName%
+	Gui, Add, Text, x300 y4 w300 h40 +Center, %The_ProjectName%
 	Gui, Font, s10 w70, Arial
 	Gui, Add, Text, x946 y0 w50 h20 +Right, %The_VersionName%
 	

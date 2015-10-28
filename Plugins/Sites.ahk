@@ -204,7 +204,7 @@ Class SiteMonitor {
 		;Touch Sites
 		if (InStr(this.Info_Array["Name"],"Touch")) {
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(touch-revamp)")
-			Clipboard := The_MemoryFile
+			;Clipboard := The_MemoryFile
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				Return

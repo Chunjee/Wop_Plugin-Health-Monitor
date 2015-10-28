@@ -85,6 +85,9 @@ Sb_CheckSpeeds()
 		;Get Status and Statistics of each Speed 
 		Speed%A_Index%.Ping()
 		
+		;Figure out average response time
+		Speed%A_Index%.ComputeAVG()
+		
 		;Update GUI Box of each Speed
 		Speed%A_Index%.UpdateGUI()
 	}
@@ -101,6 +104,8 @@ Class Speed {
 		this.Info_Array["Name"] := para_Name
 		this.Info_Array["Type"] := para_Type
 		this.Info_Array["endpoint"] := para_Location
+
+		this.AVGArray := []
 	}
 	
 	CreateButton(hWnd) {
@@ -136,40 +141,62 @@ Class Speed {
 	}
 	
 	Ping() {
-		;RTT := Ping4(this.Info_Array["endpoint"],Result)
-
-		/*Do not try this until ping is improved*/
-		if (this.Info_Array["Type"] = "fast") {
-			RTT := Ping4(this.Info_Array["endpoint"],Result)
-		}
-		if (this.Info_Array["Type"] = "ip") {
-			RTT := PingAsync(this.Info_Array["endpoint"])
-			msgbox, % RTT
-		}
-		
-
+		RTT := Ping4(this.Info_Array["endpoint"],Result)
 		this.Info_Array["Time"] := Result.RTTime
 		this.Info_Array["IP"] := Result.IPAddr
 
+		/*;Do not try this until ping is improved
+		if (this.Info_Array["Type"] = "fast") {
+			RTT := Ping4(this.Info_Array["endpoint"],Result)
+			this.Info_Array["Time"] := Result.RTTime
+			this.Info_Array["IP"] := Result.IPAddr
+		}
+		if (this.Info_Array["Type"] = "ip") {
+			this.Info_Array["Time"] := Ping(this.Info_Array["endpoint"],400,"Hello!",6,Value,Length)
+			this.Info_Array["IP"] := this.Info_Array["endpoint"]
+		}
+		*/
+		
+
+		
+
 	}
 
-	CheckStatus() {
+	ComputeAVG() {
 
+		;Understand cases of no repsonse or timeout as 0
+		if (this.Info_Array["Time"] = "-1" || this.Info_Array["Time"] = "") {
+			this.Info_Array["Time"] := 0
+		}
+
+		;Add latest ping to AVGArray
+		this.AVGArray.Push(this.Info_Array["Time"])
+
+		;Remove last element if Array is bigger than 3
+		If (this.AVGArray.MaxIndex() > 3) {
+			this.AVGArray.Pop()
+		}
+
+		;Add all elements of the Array up and divide by the total to get the average
+		Average = 0
+		Loop, % this.AVGArray.MaxIndex() {
+			Average += this.AVGArray[A_Index]
+		}
+		this.Info_Array["ResponseAVG"] := Floor(Average / this.AVGArray.MaxIndex())
 	}
 	
 	
 	UpdateGUI() {
 		
 		;Update the GUIBox depending on the status of the Speed
-		ResponseTime := this.Info_Array["Time"]
-		CombinedText := this.Info_Array["IP"] . "`nDelay:" . this.Info_Array["Time"]
+		ResponseTime := this.Info_Array["ResponseAVG"]
+		CombinedText := this.Info_Array["IP"] . "`nDelay:" . this.Info_Array["ResponseAVG"]
 
 		;Draw box depending on response time of the site
-		if (ResponseTime = "-1" || ResponseTime = "") {
+		if (ResponseTime = "-1" || ResponseTime = "" || ResponseTime = "0") {
 			this.Draw("NO REPLY" . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED
 			Return
 		}
-
 
 		if (ResponseTime < 60) {
 			this.Draw(CombinedText, Fn_RGB("0x009900"), 20) ;Green
@@ -193,17 +220,5 @@ Class Speed {
 		}
 		this.Draw("???" . CombinedText, Fn_RGB("0xFFFFFF"), 30) ;White check unsuccessful
 		
-	}
-	
-	SetOptimal() {
-		;Use /statistics Endpoint, save raw result to JSON_Statistics
-		Endpoint := this.Info_Array["endpoint"] . "/control?operation=SetStatusToOptimal"
-		Staging := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		Staging.Open("Get", Endpoint, False)
-		Staging.SetRequestHeader("Accept", "application/json")
-		Staging.Send()
-		
-		;Save Raw just for later viewing
-		this.Info_Array["JSON_Optimal"] := Staging.ResponseText
 	}
 }
