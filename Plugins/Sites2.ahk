@@ -255,5 +255,56 @@ Class SiteMonitorDirect {
 				this.Info_Array["CurrentStatus"] := "Offline"
 			}
 		}
+
+		;TGPs
+		if (InStr(this.Info_Array["Name"],"TGPs")) {
+			if (TGP_Array.MaxIndex() = "") {
+				TGP_Array := []
+
+
+				Loop, Read, %A_ScriptDir%\plugins\TGPs.txt
+				{
+					TGP_Array[A_Index,"Name"] := Fn_QuickRegEx(A_LoopReadLine,"(.+)")
+				}
+			}
+			Loop, % TGP_Array.MaxIndex() {
+				;WinServ(ServiceName, Task="", Silent=True, Computer="")
+				;ServiceRunning := WinServ("SGRTransactionGateway","",False,TGP_Array[A_Index,"Name"])
+				
+				;Msgbox, % ServiceRunning . " - " . TGP_Array[A_Index,"Name"]
+				Response := Fn_QueryService(TGP_Array[A_Index,"Name"],"SGRTransactionGateway")
+				Msgbox, % Fn_ParseServiceResponse(Response)
+			}
+
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\[\])")
+			if (ServiceRunning) {
+				this.Info_Array["CurrentStatus"] := "Online"
+			} else if (ServiceRunning = 0) {
+				this.Info_Array["CurrentStatus"] := "Offline"
+			}
+		}
+	}
+}
+
+
+Fn_QueryService(para_Machine,para_Service)
+{
+	shell := ComObjCreate("WScript.Shell")
+	; Open cmd.exe with echoing of commands disabled
+	exec := shell.Exec(ComSpec " /Q /K echo off")
+	commands := " sc \\" . para_Machine . " query " . para_Service
+	; Send the commands to execute, separated by newline
+	exec.StdIn.WriteLine(commands "`nexit")  ; Always exit at the end!
+	; Read and return the output of all commands
+	return exec.StdOut.ReadAll()
+}
+
+
+Fn_ParseServiceResponse(para_Reponse)
+{
+	msgbox, % para_Reponse
+	ServiceStatus := Fn_QuickRegEx(para_Reponse,"STATE\S+:(\d)")
+	If (ServiceStatus = 4) {
+		Return Running
 	}
 }

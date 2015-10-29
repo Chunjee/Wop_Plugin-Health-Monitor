@@ -22,9 +22,10 @@ The_VersionName = v0.6
 #Include class_GDI.ahk
 #Include util_misc.ahk
 #Include util_json.ahk
-#Include ping.ahk
+;#Include ping.ahk
 #Include ping4.ahk
 #Include internet_fileread.ahk
+#Include WinServ.ahk
 
 ;For Debug Only
 #Include util_arrays.ahk
@@ -80,7 +81,7 @@ Class EmailWog {
 		pmsg.From 	:= Crypt.Encrypt.StrDecrypt("fRvAazv+p8G7nnpN8xvzoFMkZdsEFej1LtPEOftAH8F+66+gaZoBdLO3F9OIs6A8vZS5CbbjaSs2jRgEeyTVOIP9Y9UMbWqakBOqlVaYxMw=", KEY_AES, 7, 6)
 		pmsg.To 		:= Crypt.Encrypt.StrDecrypt("muHxGpLCHlg6dgZUe3F/KTrpSHtYBMCOegg3F8klk15BeR/VrHoMP/LzuQOKHTeQ", this.KEY_AES, 7, 6)
 		pmsg.CC 		:= ""
-		pmsg.BCC 	:= ""   
+		pmsg.BCC 	:= ""
 		pmsg.Subject 	:= "Disk Space Cleanup for " . LongDate
 		
 		if (para_IsHTML) {
