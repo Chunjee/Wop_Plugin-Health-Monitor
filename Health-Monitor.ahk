@@ -4,6 +4,9 @@
 ; Monitors several TVG systems
 ; 
 
+;Hide CMD window
+DllCall("AllocConsole")
+WinHide % "ahk_id " DllCall("GetConsoleWindow", "ptr")
 
 ;~~~~~~~~~~~~~~~~~~~~~
 ;Compile Options
@@ -14,7 +17,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.6
+The_VersionName = v0.7
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -25,7 +28,6 @@ The_VersionName = v0.6
 ;#Include ping.ahk
 #Include ping4.ahk
 #Include internet_fileread.ahk
-#Include WinServ.ahk
 
 ;For Debug Only
 #Include util_arrays.ahk
@@ -43,10 +45,10 @@ GUI_y := 50
 ;; Create GUI based off plugins (TEST)
 #Include %A_ScriptDir%\Plugins
 #Include DVR.ahk
-#Include Sites.ahk
-#Include Sites2.ahk
-#Include Speed.ahk
-#Include SVC.ahk
+;#Include Sites.ahk
+;#Include Sites2.ahk
+;#Include Speed.ahk
+#Include Services.ahk
 
 
 GUI_x += 50 ;Box
@@ -81,7 +83,7 @@ Class EmailWog {
 		pmsg.From 	:= Crypt.Encrypt.StrDecrypt("fRvAazv+p8G7nnpN8xvzoFMkZdsEFej1LtPEOftAH8F+66+gaZoBdLO3F9OIs6A8vZS5CbbjaSs2jRgEeyTVOIP9Y9UMbWqakBOqlVaYxMw=", KEY_AES, 7, 6)
 		pmsg.To 		:= Crypt.Encrypt.StrDecrypt("muHxGpLCHlg6dgZUe3F/KTrpSHtYBMCOegg3F8klk15BeR/VrHoMP/LzuQOKHTeQ", this.KEY_AES, 7, 6)
 		pmsg.CC 		:= ""
-		pmsg.BCC 	:= ""
+		pmsg.BCC 	:= ""   
 		pmsg.Subject 	:= "Disk Space Cleanup for " . LongDate
 		
 		if (para_IsHTML) {

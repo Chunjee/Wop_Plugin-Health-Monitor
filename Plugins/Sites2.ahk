@@ -269,11 +269,8 @@ Class SiteMonitorDirect {
 			}
 			Loop, % TGP_Array.MaxIndex() {
 				;WinServ(ServiceName, Task="", Silent=True, Computer="")
-				;ServiceRunning := WinServ("SGRTransactionGateway","",False,TGP_Array[A_Index,"Name"])
-				
-				;Msgbox, % ServiceRunning . " - " . TGP_Array[A_Index,"Name"]
-				Response := Fn_QueryService(TGP_Array[A_Index,"Name"],"SGRTransactionGateway")
-				Msgbox, % Fn_ParseServiceResponse(Response)
+				ServiceRunning := WinServ("SGRTransactionGateway",,False,TGP_Array[A_Index,"Name"])
+				Msgbox, % ServiceRunning . " - " . TGP_Array[A_Index,"Name"]
 			}
 
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\[\])")
@@ -284,27 +281,13 @@ Class SiteMonitorDirect {
 			}
 		}
 	}
-}
 
 
-Fn_QueryService(para_Machine,para_Service)
-{
-	shell := ComObjCreate("WScript.Shell")
-	; Open cmd.exe with echoing of commands disabled
-	exec := shell.Exec(ComSpec " /Q /K echo off")
-	commands := " sc \\" . para_Machine . " query " . para_Service
-	; Send the commands to execute, separated by newline
-	exec.StdIn.WriteLine(commands "`nexit")  ; Always exit at the end!
-	; Read and return the output of all commands
-	return exec.StdOut.ReadAll()
-}
+	InitializeTGPs() {
 
+	}
 
-Fn_ParseServiceResponse(para_Reponse)
-{
-	msgbox, % para_Reponse
-	ServiceStatus := Fn_QuickRegEx(para_Reponse,"STATE\S+:(\d)")
-	If (ServiceStatus = 4) {
-		Return Running
+	CheckTGPs() {
+		;WinServ(ServiceName, Task="", Silent=True, Computer="")
 	}
 }
