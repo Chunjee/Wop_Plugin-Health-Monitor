@@ -11,12 +11,23 @@ Services_BoxSize := endboxsize
 ;Read from DVR.txt about what DVRs to monitor
 Loop, Read, %A_ScriptDir%\plugins\Services.txt
 {
+	If(InStr(A_LoopReadLine,";")) {
+		Continue
+	}
 	UserDefined_SystemType := Fn_QuickRegEx(A_LoopReadLine,"(.+)")
+
+
+	;Add new line if max ammount of boxes reached
+		if (gui_x >= 870) {
+			gui_x = 30
+			gui_y += endboxsize + 10
+			height += endboxsize + 30
+		}
 
 	;Create GUI box for each Type
 	Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
 	Gui, Show, w1000 , %The_ProjectName%
-	gui_x += endboxsize + 20
+	gui_x += endboxsize + 10
 
 	ServicesObj%A_Index% := New Services_Class(UserDefined_SystemType)
 	
@@ -62,17 +73,14 @@ SB_CheckServices()
 	
 	endboxsize := Services_BoxSize
 	
-	;Update the status and stats of each DVR
+	;Update the status and stats of each
 	Loop, % ServicesTop_Array.MaxIndex() {
 		
-		;Get Status and Statistics of each DVR 
+		;Get Status and Statistics of each
 		ServicesObj%A_Index%.CheckStatus()
 		
-		;Update GUI Box of each DVR
+		;Update GUI Box of each
 		ServicesObj%A_Index%.UpdateGUI()
-		
-		;Set Optimal
-		;DVR%A_Index%.SetOptimal()
 	}
 	;Clipboard := Fn_JSONfromOBJ(ServicesTop_Array)
 	Return
@@ -84,13 +92,22 @@ Class Services_Class {
 	
 	__New(para_Name) {
 		this.Info_Array := []
-
+		this.Label := para_Name
 		X = 0
-		Loop, Read, %A_ScriptDir%\plugins\%para_Name%.txt
+		Loop, Read, %A_ScriptDir%\plugins\services\%para_Name%.txt
 		{
+			If (InStr(A_LoopReadLine,";")) {
+				Continue
+			}
 			If (A_Index = 1) {
 				this.Services_Array := StrSplit(Fn_QuickRegEx(A_LoopReadLine,"(.+)"),",")
-				;Array_GUI(this.Services_Array)
+
+				;Remove any blanks
+				Loop, % this.Services_Array.MaxIndex() {
+					If (this.Services_Array[A_Index] = "" || this.Services_Array[A_Index] = " ") {
+						this.Services_Array.RemoveAt(A_Index)
+					}
+				}
 				Continue
 			}
 			X++
@@ -114,7 +131,7 @@ Class Services_Class {
 		this.Draw("UnChecked", Fn_RGB("0xFFFFFF"), 18) ;White Unchecked
 	}
 	
-	Draw(para_Text, para_Color, para_TextSize = 18)
+	Draw(para_Text, para_Color, para_TextSize1 = 30, para_TextSize2 = 10)
 	{
 		global endboxsize
 		TextArray := StrSplit(para_Text,"`n")
@@ -125,107 +142,122 @@ Class Services_Class {
 		x := 30
 		Loop, % TextArray.MaxIndex() {
 			if (A_Index = 1) {
-				;Always draw first line specifically and with para_TextSize
-				this.GDI.DrawText(0, 0, endboxsize, 50, this.Info_Array["Name"], "0x000000", "Times New Roman", 40, "CC")
+				;Always draw first line specifically and with para_TextSize1
+				this.GDI.DrawText(0, 0, endboxsize, 50, TextArray[A_Index], "0x000000", "Times New Roman", para_TextSize1, "CC")
+				Continue
 			}
 			;Following lines are drawn generically
-			this.GDI.DrawText(0, x, endboxsize, 50, TextArray[A_Index], "0x000000", "Consolas", para_TextSize, "CC")
-			x += 26
+			this.GDI.DrawText(0, x, endboxsize, 50, TextArray[A_Index], "0x000000", "Consolas", para_TextSize2, "CC")
+			x += %para_TextSize2%
 		}
 		this.GDI.BitBlt()
 	}
 	
 	CheckStatus() {
 		X = 0
+		Y = 0
+		this.ErrorMessage := ""
+		this.TotalRunning := 0
 		Loop, % this.Info_Array.MaxIndex() {
 			X++
 			Loop, % this.Services_Array.MaxIndex() {
+				Y++
 
-
+				;;Get the service status
 				this.Info_Array[X,"RAWSTATUS"] := Fn_QueryService(this.Info_Array[X,"Name"],this.Services_Array[A_Index])
-				;Msgbox, % this.Info_Array[X,"RAWSTATUS"] . "   on " . this.Info_Array[X,"Name"]
+				;msgbox, % this.Info_Array[X,"RAWSTATUS"]
+
+				;;Parse the raw status
 				this.Info_Array[X,"Status"] := Fn_ParseServiceResponse(this.Info_Array[X,"RAWSTATUS"])
-				;Msgbox, % this.Info_Array[X,"Status"]
+
+				;;Convert the status to a human readable string
+				this.Info_Array[X,"Status_HumanReadable"] := Fn_ServiceResponseHumanReadable(this.Info_Array[X,"Status"])
+				;msgbox, % this.Info_Array[X,"Status"] . "  -  " this.Info_Array[X,"Status_HumanReadable"]
+
+				If (this.Info_Array[X,"Status"] != "4") { ;If not running
+					this.ErrorMessage := "Check " . this.Services_Array[A_Index] . " on " . this.Info_Array[X,"Name"] . ": " . this.Info_Array[X,"Status_HumanReadable"]
+				} Else {
+					this.TotalRunning += 1
+				}
 			}
-			
 		}
+		this.TotalCheckedServices := Y
+		;msgbox, % this.ErrorMessage
 	}
 	
 	
 	UpdateGUI() {
 		
-		;Update the GUIBox depending on the status of the DVR
-		SecondsSinceLastError := this.Info_Array["SecondsSinceLastError"]
-		
-		SinceLastError := SecondsSinceLastError
-		Measurement = seconds
-		
-		if (SecondsSinceLastError > 60) {
-			SinceLastError := floor(SecondsSinceLastError / 60)
-			Measurement = mins
-		}
-		if (SecondsSinceLastError > 3600) {
-			SinceLastError := floor(SecondsSinceLastError / 3600)
-			Measurement = hours
-		}
-		if (SecondsSinceLastError > 86400) {
-			SinceLastError := floor(SecondsSinceLastError / 86400)
-			Measurement = days
-		}
-		if (SecondsSinceLastError = "") {
-			SinceLastError := "No Errors"
-			Measurement =
-		}
-		
-		CurrentUsage := this.Info_Array["UsagePercent"]
-		
-		CombinedText := "`n" . SinceLastError . " " . Measurement . "`n Usage: " . CurrentUsage . "%"
-		
-		
-		
-		CurrentStatus := this.Info_Array["CurrentStatus"]
-		if (CurrentStatus = 2) {
-			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 30) ;Green Online
-		} else {
-			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED ???
-			this.SetOptimal()
+		;Update the GUIBox depending on the status of the Services
+		;Orange 0xFF6600
 
-			;Record error to text file
-			MachineName := this.Info_Array["Name"]
-			FileAppend, %A_YYYY%%A_MM%%A_DD% [%A_Hour%:%A_Min%] <%MachineName%> %CurrentStatus%`n`r, %A_ScriptDir%\Data\Errors.txt
+		;Cut up error message into sizes that will fit
+		this.ErrorMessage := RegexReplace(this.ErrorMessage, ".{23}\K", "`n")
+
+
+		CombinedText := "`n" this.Services_Array[1] "`n" this.TotalRunning "/" this.TotalCheckedServices "`n" this.ErrorMessage
+
+		;Understand the 
+		this.HealthStatus := this.TotalRunning / this.TotalCheckedServices
+		;msgbox, % this.HealthStatus
+		If (this.HealthStatus = 1) {
+			this.Draw(this.Label . "`n" this.TotalRunning "/" this.TotalCheckedServices " Running", Fn_RGB("0x009900"), 30, 20) ;Green
 		}
-		
-	}
-	
-	SetOptimal() {
-		;Use /statistics Endpoint, save raw result to JSON_Statistics
-		Endpoint := this.Info_Array["endpoint"] . "/control?operation=SetStatusToOptimal"
-		Staging := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		Staging.Open("Get", Endpoint, False)
-		Staging.SetRequestHeader("Accept", "application/json")
-		Staging.Send()
-		
-		;Save Raw just for later viewing
-		this.Info_Array["JSON_Optimal"] := Staging.ResponseText
+		If (this.HealthStatus <= .99) {
+			this.Draw(this.Label . "`nDegraded!" . CombinedText, Fn_RGB("0x669900"), 30, 12) ;Light Green
+		}
+		If (this.HealthStatus <= .90) {
+			this.Draw(this.Label . "`nDegraded!" . CombinedText, Fn_RGB("0xFFCC00"), 30, 12) ;Light Orange
+		}
+		If (this.HealthStatus <= .75) {
+			this.Draw(this.Label . "`nDegraded!" . CombinedText, Fn_RGB("0xFF6600"), 30, 12) ;Orange
+		}
+		If (this.HealthStatus <= .10) {
+			this.Draw(this.Label . "`nDegraded!" . CombinedText, Fn_RGB("0xCC0000"), 30, 12) ;RED
+		}
+
+
+		;Old
+		/*
+		If (this.ErrorMessage != "") {
+			this.Draw(this.Label . "`nDegraded!" . "`n" . this.ErrorMessage, Fn_RGB("0xCC0000"), 30, 7) ;RED
+		} Else {
+			
+		}
+		*/
 	}
 }
 
 Fn_QueryService(para_Machine,para_Service)
 {
+	;msgbox, -%para_Machine% and %para_Service%-
+
+	;Open cmd.exe with echoing of commands disabled
 	shell := ComObjCreate("WScript.Shell")
-	; Open cmd.exe with echoing of commands disabled
-	exec := shell.Exec(ComSpec " /Q /C echo off")
+	
+	;Send the commands to execute, separated by newline
+	exec := shell.Exec(ComSpec " /Q echo off")
 	commands := " sc \\" . para_Machine . " query " . para_Service
-	; Send the commands to execute, separated by newline
-	exec.StdIn.WriteLine(commands "`nexit")  ; Always exit at the end!
-	; Read and return the output of all commands
-	return exec.StdOut.ReadAll()
+	
+	;Always exit at the end!
+	exec.StdIn.WriteLine(commands "`nexit")  
+	
+	;Read and return the output of all commands
+	return % exec.StdOut.ReadAll()
 }
 
 
 Fn_ParseServiceResponse(para_Reponse)
 {
 	ServiceStatus := Fn_QuickRegEx(para_Reponse,"STATE\s+: (\d+)")
+
+	If (ServiceStatus != "null") {
+		Return %ServiceStatus%
+	}
+	Return "000"
+
+
+	/*
 	If (ServiceStatus = 1) {
 		Return "Stopped"
 	}
@@ -237,6 +269,29 @@ Fn_ParseServiceResponse(para_Reponse)
 	}
 	If (ServiceStatus = 4) {
 		Return "Running"
+	}
+	Return "Not Understood"
+	*/
+}
+
+
+Fn_ServiceResponseHumanReadable(para_Reponse)
+{
+	If (para_Reponse = 1) {
+		Return "Stopped"
+	}
+	If (para_Reponse = 2) {
+		Return "Start Pending"
+	}
+	If (para_Reponse = 3) {
+		Return "Stop Pending"
+	}
+	If (para_Reponse = 4) {
+		Return "Running"
+	}
+
+	If (para_Reponse = 000) {
+		Return "Query UnSuccessful"
 	}
 
 	Return "Not Understood"

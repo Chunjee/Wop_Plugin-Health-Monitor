@@ -9,7 +9,7 @@ gui_x = 30
 height = 0
 DVRTop_Array := []
 
-endboxsize := 100 * 1.6
+endboxsize := 100 * 2.0
 DVR_BoxSize := endboxsize
 ;Read from DVR.txt about what DVRs to monitor
 Loop, Read, %A_ScriptDir%\plugins\DVR.txt

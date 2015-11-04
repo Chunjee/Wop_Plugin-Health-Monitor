@@ -197,7 +197,7 @@ Class SiteMonitorDirect {
 		}
 		;HRTV
 		if (InStr(this.Info_Array["Name"],"HRTV")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Follow HRTV)")
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Wager NOW)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
@@ -256,7 +256,8 @@ Class SiteMonitorDirect {
 			}
 		}
 
-		;TGPs
+		;TGPs - See Services.ahk instead
+		/*
 		if (InStr(this.Info_Array["Name"],"TGPs")) {
 			if (TGP_Array.MaxIndex() = "") {
 				TGP_Array := []
@@ -280,14 +281,6 @@ Class SiteMonitorDirect {
 				this.Info_Array["CurrentStatus"] := "Offline"
 			}
 		}
-	}
-
-
-	InitializeTGPs() {
-
-	}
-
-	CheckTGPs() {
-		;WinServ(ServiceName, Task="", Silent=True, Computer="")
+		*/
 	}
 }

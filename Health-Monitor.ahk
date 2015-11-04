@@ -45,11 +45,11 @@ GUI_y := 50
 ;; Create GUI based off plugins (TEST)
 #Include %A_ScriptDir%\Plugins
 #Include DVR.ahk
-;#Include Sites.ahk
-;#Include Sites2.ahk
-;#Include Speed.ahk
+#Include Sites.ahk
+#Include Sites2.ahk
+#Include Speed.ahk
 #Include Services.ahk
-
+;#Include SVC.ahk
 
 GUI_x += 50 ;Box
 GUI_y += 50 ;Text
