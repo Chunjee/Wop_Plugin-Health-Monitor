@@ -1,61 +1,62 @@
-﻿;global ALF := new CustomButton(hWnd)
-;ALF.Draw
-
-
-
-gui_orginaly := gui_y
-gui_y += 20
-gui_x = 30
-height = 0
-DVRTop_Array := []
-
-endboxsize := 100 * 2.0
-DVR_BoxSize := endboxsize
-;Read from DVR.txt about what DVRs to monitor
-Loop, Read, %A_ScriptDir%\plugins\DVR.txt
+﻿TxtFile = %A_ScriptDir%\plugins\DVR.txt
+IfExist, % TxtFile
 {
-	;Create the DVR Object for each
-	Name := Fn_QuickRegEx(A_LoopReadLine,"Name:(\w+)")
-	BaseURL := Fn_QuickRegEx(A_LoopReadLine,"Location:(\w+)")
-	
-	DVR%A_Index% := New DVR(Name,BaseURL)
-	
-	;Create GUI box for each DVR
-	Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
-	Gui, Show, w1000 , %The_ProjectName%
-	gui_x += endboxsize + 20
-	
-	;Change to a re-drawable gui for the DVR
-	DVR%A_Index%.CreateButton(hWnd)
-	
-	;Add object to array for enumeration
-	DVRTop_Array[A_Index] := DVR%A_Index%
-	
-	;Might be needed later if we want clickable buttons
-	;DVRButton%A_Index% := New CustomButton(hWnd)
+	PluginActive_Bool := True
+} else {
+	PluginActive_Bool := False
 }
-gui_y += endboxsize + 20
-
-;Draw Box around this plugin
-height += endboxsize + 40
-Gui, Font, s12 w700, Arial
-Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, DVR
-Gui, Font
 
 
-;Debug options
-;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
-;FileAppend, %Alf%, %A_ScriptDir%\HUGE.JSON
-;Array_GUI(DVRTop_Array)
+If (PluginActive_Bool) {
+	gui_orginaly := gui_y
+	gui_y += 20
+	gui_x = 30
+	height = 0
+	DVRTop_Array := []
+
+
+	endboxsize := 100 * 2.0
+	DVR_BoxSize := endboxsize
+	;Read from DVR.txt about what DVRs to monitor
+	Loop, Read, % TxtFile
+	{
+		;Create the DVR Object for each
+		Name := Fn_QuickRegEx(A_LoopReadLine,"Name:(\w+)")
+		BaseURL := Fn_QuickRegEx(A_LoopReadLine,"Location:(\w+)")
+		
+		DVR%A_Index% := New DVR(Name,BaseURL)
+		
+		;Create GUI box for each DVR
+		Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
+		Gui, Show, w1000 , %The_ProjectName%
+		gui_x += endboxsize + 20
+		
+		;Change to a re-drawable gui for the DVR
+		DVR%A_Index%.CreateButton(hWnd)
+		
+		;Add object to array for enumeration
+		DVRTop_Array[A_Index] := DVR%A_Index%
+		
+		;Might be needed later if we want clickable buttons
+		;DVRButton%A_Index% := New CustomButton(hWnd)
+	}
+	;Draw Box around this plugin
+	height += endboxsize + 40
+	Gui, Font, s12 w700, Arial
+	Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, DVR
+	Gui, Font
+
+	gui_y += endboxsize + 20
+
+	SetTimer, CheckDVRs, 2000
+}
 
 
 
-SetTimer, CheckDVRs, 2000
 
-;OnMessage(0xF, "WM_PAINT")
-;OnMessage(0x200, "WM_MOUSEMOVE")
-;OnMessage(0x201, "WM_LBUTTONDOWN")
-;OnMessage(0x202, "WM_LBUTTONUP")
+
+
+;Plugin functions and classes-------------------------------
 
 
 

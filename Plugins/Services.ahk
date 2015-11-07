@@ -1,67 +1,72 @@
-﻿
-gui_orginaly := gui_y
-gui_y += 20
-gui_x = 30
-height = 0
-ServicesTop_Array := []
-
-
-endboxsize := 100 * 1.4
-Services_BoxSize := endboxsize
-;Read from DVR.txt about what DVRs to monitor
-Loop, Read, %A_ScriptDir%\plugins\Services.txt
+﻿TxtFile = %A_ScriptDir%\plugins\Services.txt
+IfExist, % TxtFile
 {
-	If(InStr(A_LoopReadLine,";")) {
-		Continue
-	}
-	UserDefined_SystemType := Fn_QuickRegEx(A_LoopReadLine,"(.+)")
-
-
-	;Add new line if max ammount of boxes reached
-		if (gui_x >= 870) {
-			gui_x = 30
-			gui_y += endboxsize + 10
-			height += endboxsize + 30
-		}
-
-	;Create GUI box for each Type
-	Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
-	Gui, Show, w1000 , %The_ProjectName%
-	gui_x += endboxsize + 10
-
-	ServicesObj%A_Index% := New Services_Class(UserDefined_SystemType)
-	
-	;Change to a re-drawable gui for the DVR
-	ServicesObj%A_Index%.CreateButton(hWnd)
-	
-	;Add object to array for enumeration
-	ServicesTop_Array[A_Index] := ServicesObj%A_Index%
-	
-	;Might be needed later if we want clickable buttons
-	;DVRButton%A_Index% := New CustomButton(hWnd)
+	PluginActive_Bool := True
+} else {
+	PluginActive_Bool := False
 }
-gui_y += endboxsize + 20
-
-;Draw Box around this plugin
-height += endboxsize + 40
-Gui, Font, s12 w700, Arial
-Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Services
-Gui, Font
-
-
-;Debug options
-;Clipboard := Fn_JSONfromOBJ(ServicesTop_Array)
-;FileAppend, %Alf%, %A_ScriptDir%\HUGE.JSON
-;Array_GUI(ServicesTop_Array)
 
 
 
-SetTimer, CheckServices, 2000
+If (PluginActive_Bool) {
+	gui_orginaly := gui_y
+	gui_y += 20
+	gui_x = 30
+	height = 0
+	ServicesTop_Array := []
 
-;OnMessage(0xF, "WM_PAINT")
-;OnMessage(0x200, "WM_MOUSEMOVE")
-;OnMessage(0x201, "WM_LBUTTONDOWN")
-;OnMessage(0x202, "WM_LBUTTONUP")
+
+	endboxsize := 100 * 1.4
+	Services_BoxSize := endboxsize
+	;Read from DVR.txt about what DVRs to monitor
+	Loop, Read, % TxtFile
+	{
+		If(InStr(A_LoopReadLine,";")) {
+			Continue
+		}
+		UserDefined_SystemType := Fn_QuickRegEx(A_LoopReadLine,"(.+)")
+
+
+		;Add new line if max ammount of boxes reached
+			if (gui_x >= 870) {
+				gui_x = 30
+				gui_y += endboxsize + 10
+				height += endboxsize + 30
+			}
+
+		;Create GUI box for each Type
+		Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
+		Gui, Show, w1000 , %The_ProjectName%
+		gui_x += endboxsize + 10
+
+		ServicesObj%A_Index% := New Services_Class(UserDefined_SystemType)
+		
+		;Change to a re-drawable gui for the DVR
+		ServicesObj%A_Index%.CreateButton(hWnd)
+		
+		;Add object to array for enumeration
+		ServicesTop_Array[A_Index] := ServicesObj%A_Index%
+		
+		;Might be needed later if we want clickable buttons
+		;DVRButton%A_Index% := New CustomButton(hWnd)
+	}
+	gui_y += endboxsize + 20
+
+	;Draw Box around this plugin
+	height += endboxsize + 40
+	Gui, Font, s12 w700, Arial
+	Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Services
+	Gui, Font
+
+
+	SetTimer, CheckServices, 2000
+}
+
+
+
+
+
+
 
 
 

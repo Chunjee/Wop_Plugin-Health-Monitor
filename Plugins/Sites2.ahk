@@ -1,71 +1,70 @@
-﻿;global ALF := new CustomButton(hWnd)
-;ALF.Draw
-
-
-
-gui_orginaly := gui_y
-gui_y += 20
-gui_x = 30
-height = 0
-SiteDirect_Array := []
-
-endboxsize := 100 * 1.4
-SiteDirect_BoxSize := endboxsize
-;Read from DVR.txt about what DVRs to monitor
-Loop, Read, %A_ScriptDir%\plugins\Sites2.txt
+﻿TxtFile = %A_ScriptDir%\plugins\Sites2.txt
+IfExist, % TxtFile
 {
-	if (InStr(A_LoopReadLine,";")) {
-		Continue
-	}
-	;Grab the Name and Url out of each line.
-	The_SiteName := Fn_QuickRegEx(A_LoopReadLine,"Name:(\S+)")
-	The_SiteURL := Fn_QuickRegEx(A_LoopReadLine,"URL:([\w:\/\.]+)")
-	;Create the DVR Object for each
-	if (The_SiteName != "null" && The_SiteURL != "null") {
-		SiteDirect%A_Index% := New SiteMonitorDirect(The_SiteName, The_SiteURL)
-		
-		;Add new line if max ammount of boxes reached
-		if (gui_x >= 870) {
-			gui_x = 30
-			gui_y += endboxsize + 10
-			height += endboxsize + 30
-		}
-
-		;Create GUI box for each DVR
-		Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
-		Gui, Show, w1000 , %The_ProjectName%
-		gui_x += endboxsize + 10
-		
-		;Change to a re-drawable gui for the Site
-		SiteDirect%A_Index%.CreateButton(hWnd)
-		
-		;Add object to array for enumeration
-		SiteDirect_Array[A_Index] := SiteDirect%A_Index%
-	}
+	PluginActive_Bool := True
+} else {
+	PluginActive_Bool := False
 }
-gui_y += endboxsize + 20
 
-;Draw Box around this plugin
-height += endboxsize + 30
+If (PluginActive_Bool) {
+	gui_orginaly := gui_y
+	gui_y += 20
+	gui_x = 30
+	height = 0
+	SiteDirect_Array := []
 
-Gui, Font, s12 w700, Arial
-Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Sites2
-Gui, Font
+	endboxsize := 100 * 1.4
+	SiteDirect_BoxSize := endboxsize
+	;Read from DVR.txt about what DVRs to monitor
+	Loop, Read, %A_ScriptDir%\plugins\Sites2.txt
+	{
+		if (InStr(A_LoopReadLine,";")) {
+			Continue
+		}
+		;Grab the Name and Url out of each line.
+		The_SiteName := Fn_QuickRegEx(A_LoopReadLine,"Name:(\S+)")
+		The_SiteURL := Fn_QuickRegEx(A_LoopReadLine,"URL:([\w:\/\.]+)")
+		;Create the DVR Object for each
+		if (The_SiteName != "null" && The_SiteURL != "null") {
+			SiteDirect%A_Index% := New SiteMonitorDirect(The_SiteName, The_SiteURL)
+			
+			;Add new line if max ammount of boxes reached
+			if (gui_x >= 870) {
+				gui_x = 30
+				gui_y += endboxsize + 10
+				height += endboxsize + 30
+			}
 
-;Debug options
-;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
-;FileAppend, %Alf%, %A_ScriptDir%\HUGE.JSON
-;Array_GUI(SiteDirect_Array)
+			;Create GUI box for each DVR
+			Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
+			Gui, Show, w1000 , %The_ProjectName%
+			gui_x += endboxsize + 10
+			
+			;Change to a re-drawable gui for the Site
+			SiteDirect%A_Index%.CreateButton(hWnd)
+			
+			;Add object to array for enumeration
+			SiteDirect_Array[A_Index] := SiteDirect%A_Index%
+		}
+	}
+	gui_y += endboxsize + 20
+
+	;Draw Box around this plugin
+	height += endboxsize + 30
+
+	Gui, Font, s12 w700, Arial
+	Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Sites2
+	Gui, Font
+
+
+	SetTimer, CheckSitesDirect, 2000
+}
 
 
 
-SetTimer, CheckSitesDirect, 2000
 
-;OnMessage(0xF, "WM_PAINT")
-;OnMessage(0x200, "WM_MOUSEMOVE")
-;OnMessage(0x201, "WM_LBUTTONDOWN")
-;OnMessage(0x202, "WM_LBUTTONUP")
 
+;Plugin functions and classes-------------------------------
 
 
 Sb_CheckSitesDirect()

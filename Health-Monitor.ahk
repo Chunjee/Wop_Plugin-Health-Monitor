@@ -17,7 +17,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.7
+The_VersionName = v0.7.1
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -42,17 +42,17 @@ Sb_RemoteShutDown() ;Allows for remote shutdown
 
 GUI_x := 24
 GUI_y := 50
-;; Create GUI based off plugins (TEST)
+;; Create GUI based off plugins
 #Include %A_ScriptDir%\Plugins
 #Include DVR.ahk
 #Include Sites.ahk
 #Include Sites2.ahk
 #Include Speed.ahk
 #Include Services.ahk
-;#Include SVC.ahk
+#Include SVC.ahk
 
-GUI_x += 50 ;Box
-GUI_y += 50 ;Text
+;GUI_x += 50 ;Box
+;GUI_y += 50 ;Text
 
 
 ;;Show GUI if all creation was successful

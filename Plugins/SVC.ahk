@@ -1,64 +1,66 @@
-﻿;global ALF := new CustomButton(hWnd)
-;ALF.Draw
-
-
-
-gui_orginaly := gui_y
-gui_y += 20
-gui_x = 30
-height = 0
-SVCTop_Array := []
-
-endboxsize := 100 * .6
-SVC_BoxSize := endboxsize
-;Read from DVR.txt about what DVRs to monitor
-Loop, Read, %A_ScriptDir%\plugins\SVC.txt
+﻿TxtFile = %A_ScriptDir%\plugins\SVC.txt
+IfExist, % TxtFile
 {
-	;Grab the Name and Url out of each line.
-	The_Name := Fn_QuickRegEx(A_LoopReadLine,"Name:(\w+\d+)")
-	;Create the SVC Object for each
-	If (The_Name != "null") {
-		SVC%A_Index% := New SVC(The_Name)
-		
-		;Create GUI box for each DVR
-		Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
-		Gui, Show, w1000 , %The_ProjectName%
-		gui_x += endboxsize + 10
-		
-		if(gui_x >= 870) {
-			gui_x = 30
-			gui_y += endboxsize + 10
-			height += endboxsize + 30
-		}
-		;Change to a re-drawable gui for the SVC
-		SVC%A_Index%.CreateButton(hWnd)
-		
-		;Add object to array for enumeration
-		SVCTop_Array[A_Index] := SVC%A_Index%
-	}
+	PluginActive_Bool := True
+} else {
+	PluginActive_Bool := False
 }
-gui_y += endboxsize
-
-;Draw Box around this plugin
-height += endboxsize + 30
-
-Gui, Font, s12 w700, Arial
-Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, SVC
-Gui, Font
-
-;Debug options
-;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
-;FileAppend, %Alf%, %A_ScriptDir%\HUGE.JSON
-;Array_GUI(DVRTop_Array)
 
 
+If (PluginActive_Bool) {
 
-SetTimer, CheckSVCs, 2000
+	gui_orginaly := gui_y
+	gui_y += 20
+	gui_x = 30
+	height = 0
+	SVCTop_Array := []
 
-;OnMessage(0xF, "WM_PAINT")
-;OnMessage(0x200, "WM_MOUSEMOVE")
-;OnMessage(0x201, "WM_LBUTTONDOWN")
-;OnMessage(0x202, "WM_LBUTTONUP")
+	endboxsize := 100 * .6
+	SVC_BoxSize := endboxsize
+	;Read from DVR.txt about what DVRs to monitor
+	Loop, Read, % TxtFile
+	{
+		;Grab the Name and Url out of each line.
+		The_Name := Fn_QuickRegEx(A_LoopReadLine,"Name:(\w+\d+)")
+		;Create the SVC Object for each
+		If (The_Name != "null") {
+			SVC%A_Index% := New SVC(The_Name)
+			
+			;Create GUI box for each DVR
+			Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
+			Gui, Show, w1000 , %The_ProjectName%
+			gui_x += endboxsize + 10
+			
+			if(gui_x >= 870) {
+				gui_x = 30
+				gui_y += endboxsize + 10
+				height += endboxsize + 30
+			}
+			;Change to a re-drawable gui for the SVC
+			SVC%A_Index%.CreateButton(hWnd)
+			
+			;Add object to array for enumeration
+			SVCTop_Array[A_Index] := SVC%A_Index%
+		}
+	}
+	gui_y += endboxsize
+
+	;Draw Box around this plugin
+	height += endboxsize + 30
+
+	Gui, Font, s12 w700, Arial
+	Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, SVC
+	Gui, Font
+
+
+	SetTimer, CheckSVCs, 2000
+}
+
+
+
+
+;Plugin functions and classes-------------------------------
+
 
 
 
