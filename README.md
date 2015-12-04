@@ -1,5 +1,5 @@
 <h1 align="center">
-	<img src="http://i.imgur.com/SIHcdDf.png" alt="Plugin-Health-Monitor">
+	<img src="http://i.imgur.com/dqAvGym.png" alt="Plugin-Health-Monitor">
 </h1>
 
 ### Overview
@@ -49,10 +49,10 @@ Same as Sites2 but smaller boxes and only checks SVCs status.
 
 |Color Coding: | Color	Meaning |
 | ------------- | ----------- |
-| ███ Green | Normal Operation |
-| ███ Red	| Offline / Requires Attention |
-| ███ Orange |	Not Normal Operation / Maintenance Page |
-| ███ White |	Check Unsuccessful / Unknown Status |
+| <font color="green">██ Green</font> | Normal Operation |
+| <font color="red">██ Red</font>	| Offline / Requires Attention |
+| <font color="orange">██ Orange</font> |	Not Normal Operation / Maintenance Page |
+| ██ White |	Check Unsuccessful / Unknown Status |
 
 Technical Details
 Latest version is 0.7.2 (12.03.15)
