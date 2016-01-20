@@ -1,4 +1,5 @@
-﻿TxtFile = %A_ScriptDir%\plugins\Sites2.txt
+﻿;; This plugin uses the faster download directly to memory
+TxtFile = %A_ScriptDir%\plugins\Sites2.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True
@@ -55,7 +56,6 @@ If (PluginActive_Bool) {
 	Gui, Font, s12 w700, Arial
 	Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Sites2
 	Gui, Font
-
 
 	SetTimer, CheckSitesDirect, 2000
 }
@@ -217,6 +217,16 @@ Class SiteMonitorDirect {
 				return
 			}
 		}
+		;CMS
+		if (InStr(this.Info_Array["Name"],"cms")) {
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Drupal)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "Online"
+				return
+			} else {
+				this.Info_Array["CurrentStatus"] := "Offline"
+			}
+		}
 		;Equibase Store
 		if (InStr(this.Info_Array["Name"],"Eq-Store")) {
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(TRACK_ID=)")
@@ -255,31 +265,37 @@ Class SiteMonitorDirect {
 			}
 		}
 
-		;TGPs - See Services.ahk instead
-		/*
-		if (InStr(this.Info_Array["Name"],"TGPs")) {
-			if (TGP_Array.MaxIndex() = "") {
-				TGP_Array := []
-
-
-				Loop, Read, %A_ScriptDir%\plugins\TGPs.txt
-				{
-					TGP_Array[A_Index,"Name"] := Fn_QuickRegEx(A_LoopReadLine,"(.+)")
-				}
-			}
-			Loop, % TGP_Array.MaxIndex() {
-				;WinServ(ServiceName, Task="", Silent=True, Computer="")
-				ServiceRunning := WinServ("SGRTransactionGateway",,False,TGP_Array[A_Index,"Name"])
-				Msgbox, % ServiceRunning . " - " . TGP_Array[A_Index,"Name"]
-			}
-
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\[\])")
-			if (ServiceRunning) {
-				this.Info_Array["CurrentStatus"] := "Online"
-			} else if (ServiceRunning = 0) {
-				this.Info_Array["CurrentStatus"] := "Offline"
-			}
+		;If any possible errors were encountered
+		if (this.Info_Array["CurrentStatus"] != "Online") {
+			;send error count to a seprate function
+			Fn_ErrorCount(1)
 		}
-		*/
+	}
+}
+
+
+Fn_ErrorCount(para_input)
+{
+static ErrorCounter
+
+	if (para_input = "report") {
+		;check if there are any errors to report
+		if (ErrorCounter > 0) {
+			;send post/get if so
+			static Base := "http://wogutilityd01/api/post/simple_error"
+			l_XHR := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+			;l_XHR.Open("GET", Base "/" UriEncode(para_input), False) ;do not wait for reply
+			l_XHR.Send()
+
+			ErrorCounter := 0
+			return
+		}
+	}
+	;set Counter to 0 if not set
+	if (ErrorCounter = "") {
+		ErrorCounter := 0
+	}
+	if (Abs(para_input) > 0) { ;only returns true when number is entered and bigger than 0
+		ErrorCounter += para_input
 	}
 }

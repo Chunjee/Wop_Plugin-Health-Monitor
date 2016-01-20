@@ -17,7 +17,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.7.1
+The_VersionName = v0.8.0
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions

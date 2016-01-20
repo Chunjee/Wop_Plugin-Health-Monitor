@@ -1,4 +1,5 @@
-﻿TxtFile = %A_ScriptDir%\plugins\Sites.txt
+﻿;; This plugin uses the slower download to file. Use Sites2 whenever possible
+TxtFile = %A_ScriptDir%\plugins\Sites.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True
