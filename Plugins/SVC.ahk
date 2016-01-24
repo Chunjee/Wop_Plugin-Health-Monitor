@@ -85,6 +85,11 @@ Sb_CheckSVCs()
 		
 		;Update GUI Box of each
 		SVC%A_Index%.UpdateGUI()
+
+		;Report any errors
+		if (SVC%A_Index%.ErrorCheck()) {
+			Fn_ErrorCount(1)
+		}
 	}
 	;Clipboard := Fn_JSONfromOBJ(SVCTop_Array)
 	Return
@@ -101,12 +106,14 @@ Class SVC {
 		this.Info_Array["URL"] := "http://" . para_Name . "/wschk/"
 	}
 	
+	
 	CreateButton(hWnd) {
 		this.GDI := new GDI(hWnd)
 		this.hWnd := hWnd
 		this.DrawDefault()
 	}
 	
+
 	UpdateGUI() {
 		
 		;Update the GUIBox depending on the status
@@ -155,6 +162,7 @@ Class SVC {
 		this.GDI.BitBlt()
 	}
 	
+
 	CheckStatus() {		
 		;Download Page to memory
 		this.Info_Array["HTMLPage"] := Fn_DownloadtoFile(this.Info_Array["URL"])
@@ -187,5 +195,11 @@ Class SVC {
 			this.Info_Array["CurrentStatus"] := "ERROR"
 			this.Info_Array["CurrentError"] := PageCheck
 		}
-	}	
+	}
+
+
+	ErrorCheck() {
+	if (this.Info_Array["CurrentStatus"] != "Online") {
+		Return 1
+	}
 }

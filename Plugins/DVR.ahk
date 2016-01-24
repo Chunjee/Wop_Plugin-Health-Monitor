@@ -348,6 +348,7 @@ Class Proof {
 		Return % Response
 	}
 	
+	;NOT USED
 	FillAll() {
 		Loop, % this.Array.MaxIndex() {
 			Response := this.FillOne(this.Array[A_Index,"Name"])
@@ -367,6 +368,4 @@ Class Proof {
 	GiveArray() {
 		Return % this.Array
 	}
-	
-	
 }

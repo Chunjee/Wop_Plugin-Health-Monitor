@@ -17,7 +17,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v0.8.0
+The_VersionName = v1.0.0
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -31,7 +31,6 @@ The_VersionName = v0.8.0
 
 ;For Debug Only
 #Include util_arrays.ahk
-
 
 Sb_InstallFiles() ;Install Included Files
 Sb_RemoteShutDown() ;Allows for remote shutdown
@@ -60,9 +59,11 @@ GUI_Build()
 	if(A_IsCompiled) {
 		Gui +AlwaysOnTop
 	}
+
+;Actual End. All processes are handled in plugins
 Return
 
-
+;does nothing
 Update:
 Return
 
@@ -282,6 +283,55 @@ Fn_ConvertSecondstoMili(para_Seconds)
 		Return % RE_Match1 * 1000
 	}
 	Return
+}
+
+
+Fn_ErrorCount(para_input)
+{
+static ErrorCounter
+	if (para_input = "report") {
+		;check if there are any errors to report
+		if (ErrorCounter > 0) {
+			;play an error sound if one exists
+			ErrorFile := A_ScriptDir . "\Data\Assets\error.mp3"
+			if (FileExist(ErrorFile)) {
+				SoundPlay, % ErrorFile
+			}
+
+			;send post/get if there are errors to report
+			static Base := "http://wogutilityd01/api/wallboarderror"
+			l_XHR := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+			l_XHR.Open("POST", Base, False) ;do not wait for reply
+			l_XHR.Send()
+
+			ErrorCounter := 0
+			return
+		}
+	}
+	;set Counter to 0 if not set
+	if (ErrorCounter = "") {
+		ErrorCounter := 0
+	}
+	if (Abs(para_input) > 0) { ;only true when number is entered and bigger than 0
+		ErrorCounter += para_input
+	}
+}
+
+
+UriEncode(Uri)
+{
+	VarSetCapacity(Var, StrPut(Uri, "UTF-8"), 0), StrPut(Uri, &Var, "UTF-8")
+	f := A_FormatInteger
+	SetFormat, IntegerFast, H
+	While Code := NumGet(Var, A_Index - 1, "UChar")
+		If (Code >= 0x30 && Code <= 0x39 ; 0-9
+			|| Code >= 0x41 && Code <= 0x5A ; A-Z
+	|| Code >= 0x61 && Code <= 0x7A) ; a-z
+	Res .= Chr(Code)
+	Else
+		Res .= "%" . SubStr(Code + 0x100, -1)
+	SetFormat, IntegerFast, %f%
+	Return, Res
 }
 
 

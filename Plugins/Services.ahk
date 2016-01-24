@@ -67,9 +67,6 @@ If (PluginActive_Bool) {
 
 
 
-
-
-
 SB_CheckServices()
 {
 	global
@@ -86,6 +83,11 @@ SB_CheckServices()
 		
 		;Update GUI Box of each
 		ServicesObj%A_Index%.UpdateGUI()
+
+		;Report any errors
+		if (ServicesObj%A_Index%.ErrorCheck()) {
+			Fn_ErrorCount(1)
+		}
 	}
 	;Clipboard := Fn_JSONfromOBJ(ServicesTop_Array)
 	Return
@@ -124,6 +126,7 @@ Class Services_Class {
 		}
 
 	}
+
 	
 	CreateButton(hWnd) {
 		this.GDI := new GDI(hWnd)
@@ -158,6 +161,7 @@ Class Services_Class {
 		this.GDI.BitBlt()
 	}
 	
+
 	CheckStatus() {
 		X = 0
 		Y = 0
@@ -230,6 +234,12 @@ Class Services_Class {
 			
 		}
 		*/
+	}
+
+
+	ErrorCheck() {
+	if (this.HealthStatus != 1) {
+		Return 1
 	}
 }
 

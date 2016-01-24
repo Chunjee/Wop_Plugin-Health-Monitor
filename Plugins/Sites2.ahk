@@ -84,7 +84,13 @@ Sb_CheckSitesDirect()
 		
 		;Update GUI Box of each
 		SiteDirect%A_Index%.UpdateGUI()
+
+		;Report any errors
+		if (SiteDirect%A_Index%.ErrorCheck()) {
+			Fn_ErrorCount(1)
+		}
 	}
+	Fn_ErrorCount("report")
 	Return
 }
 
@@ -100,12 +106,14 @@ Class SiteMonitorDirect {
 		this.DrawDefault()
 	}
 	
+	
 	CreateButton(hWnd) {
 		this.GDI := new GDI(hWnd)
 		this.hWnd := hWnd
 		this.DrawDefault()
 	}
 	
+
 	UpdateGUI() {
 		
 		;Update the GUIBox depending on the status
@@ -151,6 +159,7 @@ Class SiteMonitorDirect {
 		this.GDI.BitBlt()
 	}
 	
+
 	CheckStatus() {
 		;Download the page and try to understand what state it is in. ONLINE / MAINTENANCE / OTHER
 		
@@ -271,31 +280,11 @@ Class SiteMonitorDirect {
 			Fn_ErrorCount(1)
 		}
 	}
-}
 
 
-Fn_ErrorCount(para_input)
-{
-static ErrorCounter
-
-	if (para_input = "report") {
-		;check if there are any errors to report
-		if (ErrorCounter > 0) {
-			;send post/get if so
-			static Base := "http://wogutilityd01/api/post/simple_error"
-			l_XHR := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-			;l_XHR.Open("GET", Base "/" UriEncode(para_input), False) ;do not wait for reply
-			l_XHR.Send()
-
-			ErrorCounter := 0
-			return
+	ErrorCheck() {
+		if (this.Info_Array["CurrentStatus"] != "Online") {
+			Return 1
 		}
-	}
-	;set Counter to 0 if not set
-	if (ErrorCounter = "") {
-		ErrorCounter := 0
-	}
-	if (Abs(para_input) > 0) { ;only returns true when number is entered and bigger than 0
-		ErrorCounter += para_input
 	}
 }

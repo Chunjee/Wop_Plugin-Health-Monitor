@@ -87,6 +87,11 @@ Sb_CheckSites()
 		
 		;Update GUI Box of each
 		Site%A_Index%.UpdateGUI()
+
+		;Report any errors
+		if (Site%A_Index%.ErrorCheck()) {
+			Fn_ErrorCount(1)
+		}
 	}
 	;Clipboard := Fn_JSONfromOBJ(SiteTop_Array)
 	Return
@@ -215,6 +220,12 @@ Class SiteMonitor {
 				this.Info_Array["CurrentStatus"] := "MainenancePage"
 				Return
 			}
+		}
+	}
+
+	ErrorCheck() {
+		if (this.Info_Array["CurrentStatus"] != "Online") {
+			Return 1
 		}
 	}
 }

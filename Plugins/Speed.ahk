@@ -90,6 +90,11 @@ Sb_CheckSpeeds()
 		
 		;Update GUI Box of each Speed
 		Speed%A_Index%.UpdateGUI()
+
+		;Report any errors
+		if (Speed%A_Index%.ErrorCheck()) {
+			Fn_ErrorCount(1)
+		}
 	}
 	;Clipboard := Fn_JSONfromOBJ(SpeedTop_Array)
 	Return
@@ -218,7 +223,12 @@ Class Speed {
 			this.Draw(CombinedText, Fn_RGB("0xCC0000"), 30) ;RED
 			Return
 		}
-		this.Draw("???" . CombinedText, Fn_RGB("0xFFFFFF"), 30) ;White check unsuccessful
-		
+		this.Draw("???" . CombinedText, Fn_RGB("0xFFFFFF"), 30) ;White check unsuccessful	
+	}
+
+	ErrorCheck() {
+		if (this.Info_Array["CurrentStatus"] != "Online") {
+			Return 1
+		}
 	}
 }
