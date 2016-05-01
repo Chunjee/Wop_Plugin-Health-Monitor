@@ -220,9 +220,14 @@ Class SiteMonitorDirect {
 		}
 		;Betfair
 		if (InStr(this.Info_Array["Name"],"Betfair")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(function openLobby)")
+			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(function)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
+				return
+			}
+			PageCheck := Fn_QuickRegEx(The_MemoryFile,"(maintenance)")
+			if (PageCheck != "null") {
+				this.Info_Array["CurrentStatus"] := "MainenancePage"
 				return
 			}
 		}

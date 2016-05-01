@@ -17,7 +17,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v1.0.0
+The_VersionName = v1.0.3
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -56,9 +56,9 @@ GUI_y := 50
 
 ;;Show GUI if all creation was successful
 GUI_Build()
-	if(A_IsCompiled) {
-		Gui +AlwaysOnTop
-	}
+if(A_IsCompiled) {
+	Gui +AlwaysOnTop
+}
 
 ;Actual End. All processes are handled in plugins
 Return
@@ -67,61 +67,11 @@ Return
 Update:
 Return
 
-
 ;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
-;Classes
+;Misc Functions
 ;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
 
-Class EmailWog {
-	
-	SetOptions() {
-		FileRead, MemoryFile, %A_ScriptDir%\Data\Key.AES
-		this.KEY_AES := Fn_QuickRegEx(MemoryFile,"(\w+)")
-	}
-	
-	Send(para_Message, para_IsHTML) {
-		pmsg 		:= ComObjCreate("CDO.Message")
-		pmsg.From 	:= Crypt.Encrypt.StrDecrypt("fRvAazv+p8G7nnpN8xvzoFMkZdsEFej1LtPEOftAH8F+66+gaZoBdLO3F9OIs6A8vZS5CbbjaSs2jRgEeyTVOIP9Y9UMbWqakBOqlVaYxMw=", KEY_AES, 7, 6)
-		pmsg.To 		:= Crypt.Encrypt.StrDecrypt("muHxGpLCHlg6dgZUe3F/KTrpSHtYBMCOegg3F8klk15BeR/VrHoMP/LzuQOKHTeQ", this.KEY_AES, 7, 6)
-		pmsg.CC 		:= ""
-		pmsg.BCC 	:= ""   
-		pmsg.Subject 	:= "Disk Space Cleanup for " . LongDate
-		
-		if (para_IsHTML) {
-			pmsg.HtmlBody 	:= para_Message
-		} else {
-			pmsg.TextBody 	:= para_Message
-		}
-		
-		
-		
-		fields := Object()
-		fields.smtpserver  			:= "smtp.gmail.com"
-		fields.smtpserverport 		:= 465 ; 25
-		fields.smtpusessl			:= True ; False
-		fields.sendusing			:= 2   ; cdoSendUsingPort
-		fields.smtpauthenticate 		:= 1   ; cdoBasic
-		fields.sendusername 		:= Crypt.Encrypt.StrDecrypt("qq0y4VK12OTFpDvacQYjMjFLjOqTd0iTeL2RIx0MHWxzyYa2xkfbVekLtXM98t+z", this.KEY_AES, 7, 6)
-		fields.sendpassword 		:= Crypt.Encrypt.StrDecrypt("Wyna31j/sNGupst3aDt585/uB6mqu/97VoXcqbfeKDS4HqMVjdBSnt7OtMiHc/A9", this.KEY_AES, 7, 6)
-		fields.smtpconnectiontimeout := 60
-		schema := "http://schemas.microsoft.com/cdo/configuration/"
-		
-		pfld :=   pmsg.Configuration.Fields
-		
-		for field,value in fields
-			pfld.Item(schema . field) := value
-		pfld.Update()
-		pmsg.Send()
-	}
-}
-
-
-;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
-;Functions
-;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
-
-Fn_UpdateProgressBar(para_ProgressBarVar,para_Max,para_Current,para_Index,para_ColorThreshold)
-{
+Fn_UpdateProgressBar(para_ProgressBarVar,para_Max,para_Current,para_Index,para_ColorThreshold) {
 	If (para_Current = para_Max)
 	{
 		Return %para_Current%
@@ -144,8 +94,7 @@ Fn_UpdateProgressBar(para_ProgressBarVar,para_Max,para_Current,para_Index,para_C
 }
 
 
-Fn_PercentCheck(para_Input)
-{
+Fn_PercentCheck(para_Input) {
 	;Checks to ensure that the input var is not under 1 or over 100, essentially for percentages
 	para_Input := Ceil(para_Input)
 	If (para_Input >= 100)
@@ -160,8 +109,7 @@ Fn_PercentCheck(para_Input)
 }
 
 
-Fn_Percent2Color(para_InputNumber,para_ThresholdPercent)
-{
+Fn_Percent2Color(para_InputNumber,para_ThresholdPercent) {
 	;Returns a color code for progress bar percentages. Kinda reverse order because otherwise it will return the first encountered Return
 	
 	If (para_InputNumber <= para_ThresholdPercent) ;Green
@@ -250,8 +198,7 @@ Fn_Percent2Color(para_InputNumber,para_ThresholdPercent)
 }
 
 
-Fn_Percent2ColorLight(para_InputNumber,para_ThresholdPercent)
-{
+Fn_Percent2ColorLight(para_InputNumber,para_ThresholdPercent) {
 	;Same as the other function but has lighter colors
 	
 	If (para_InputNumber <= para_ThresholdPercent) ;Green
@@ -275,8 +222,7 @@ Fn_Percent2ColorLight(para_InputNumber,para_ThresholdPercent)
 }
 
 
-Fn_ConvertSecondstoMili(para_Seconds)
-{
+Fn_ConvertSecondstoMili(para_Seconds) {
 	RegExMatch(para_Seconds, "(\d+)", RE_Match)
 	If (RE_Match1 != "")
 	{
@@ -286,8 +232,7 @@ Fn_ConvertSecondstoMili(para_Seconds)
 }
 
 
-Fn_ErrorCount(para_input)
-{
+Fn_ErrorCount(para_input) {
 static ErrorCounter
 	if (para_input = "report") {
 		;check if there are any errors to report
@@ -318,8 +263,7 @@ static ErrorCounter
 }
 
 
-UriEncode(Uri)
-{
+UriEncode(Uri) {
 	VarSetCapacity(Var, StrPut(Uri, "UTF-8"), 0), StrPut(Uri, &Var, "UTF-8")
 	f := A_FormatInteger
 	SetFormat, IntegerFast, H
@@ -335,8 +279,7 @@ UriEncode(Uri)
 }
 
 
-Fn_DataFileInfoTime(para_File)
-{
+Fn_DataFileInfoTime(para_File) {
 	l_FileModified := 
 	
 	;Do normal filesize checking if the file exists
@@ -363,19 +306,16 @@ Sb_GlobalNameSpace() {
 }
 
 
-Sb_InstallFiles()
-{
+Sb_InstallFiles() {
 	FileCreateDir, %A_ScriptDir%\Data\Temp\
 }
 
-Sb_EmailOps()
-{
+Sb_EmailOps() {
 	;Currently Does nothing
 }
 
 
-GUI_Build()
-{
+GUI_Build() {
 	global
 	
 	;GUI Always on top variable

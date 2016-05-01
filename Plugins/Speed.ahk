@@ -146,7 +146,7 @@ Class Speed {
 	}
 	
 	Ping() {
-		RTT := Ping4(this.Info_Array["endpoint"],Result)
+		Ping4(this.Info_Array["endpoint"],Result, 900)
 		this.Info_Array["Time"] := Result.RTTime
 		this.Info_Array["IP"] := Result.IPAddr
 
@@ -161,10 +161,6 @@ Class Speed {
 			this.Info_Array["IP"] := this.Info_Array["endpoint"]
 		}
 		*/
-		
-
-		
-
 	}
 
 	ComputeAVG() {
@@ -198,8 +194,8 @@ Class Speed {
 		CombinedText := this.Info_Array["IP"] . "`nDelay:" . this.Info_Array["ResponseAVG"]
 
 		;Draw box depending on response time of the site
-		if (ResponseTime = "-1" || ResponseTime = "" || ResponseTime = "0") {
-			this.Draw("NO REPLY" . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED
+		if (ResponseTime = "-1" || ResponseTime = "") {
+			this.Draw("NO REPLY " . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED
 			Return
 		}
 

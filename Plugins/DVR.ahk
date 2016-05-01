@@ -88,7 +88,7 @@ Sb_CheckDVRs()
 
 
 Class DVR {
-	
+
 	__New(para_Name,para_Location) {
 		this.Info_Array := []
 		this.Info_Array["Name"] := para_Name
@@ -99,20 +99,18 @@ Class DVR {
 		this.Info_Array["JSON_Statistics"] := "null"
 		this.Info_Array["CurrentStatus"] := "null"
 	}
-	
+
 	CreateButton(hWnd) {
 		this.GDI := new GDI(hWnd)
 		this.hWnd := hWnd
 		this.DrawDefault()
 	}
 	
-	DrawDefault()
-	{
+	DrawDefault() {
 		this.Draw("UnChecked", Fn_RGB("0xFFFFFF"), 18) ;White Unchecked
 	}
 	
-	Draw(para_Text, para_Color, para_TextSize = 18)
-	{
+	Draw(para_Text, para_Color, para_TextSize = 18) {
 		global endboxsize
 		TextArray := StrSplit(para_Text,"`n")
 		
@@ -219,7 +217,6 @@ Class DVR {
 			MachineName := this.Info_Array["Name"]
 			FileAppend, %A_YYYY%%A_MM%%A_DD% [%A_Hour%:%A_Min%] <%MachineName%> %CurrentStatus%`n`r, %A_ScriptDir%\Data\Errors.txt
 		}
-		
 	}
 	
 	SetOptimal() {
@@ -234,6 +231,7 @@ Class DVR {
 		this.Info_Array["JSON_Optimal"] := Staging.ResponseText
 	}
 }
+
 
 
 Fn_CurrentUnixTime()
@@ -318,54 +316,5 @@ class CustomButton
 	BitBlt()
 	{
 		this.GDI.BitBlt()
-	}
-}
-
-
-
-
-Class Proof {
-	
-	something := "Hello World!"
-	
-	__New() {
-		this.Array := []
-		Loop, read, %A_ScriptDir%\Bacon.txt
-		{
-			this.Array[A_Index,"Name"] := A_LoopReadLine
-		}
-	}
-	
-	FillOne(para_term) {
-		
-		Base := "https://mashape-community-urban-dictionary.p.mashape.com/define?term=" . para_term
-		Staging := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		Staging.Open("Get", Base, False)
-		Staging.SetRequestHeader("X-Mashape-Key", "PF7pavFH0ymsheIScndtHbijovmXp1cFH5ljsn7WRBajvDLmhR")
-		Staging.SetRequestHeader("Accept", "text/plain")
-		Staging.Send()
-		Response := Staging.ResponseText
-		Return % Response
-	}
-	
-	;NOT USED
-	FillAll() {
-		Loop, % this.Array.MaxIndex() {
-			Response := this.FillOne(this.Array[A_Index,"Name"])
-			this.Array[A_Index,"JSON"] := Response
-		}
-	}
-	
-	ConvertJSON() {
-		Loop, % this.Array.MaxIndex() {
-			Obj := Fn_JSONtoOBJ(this.Array[A_Index,"JSON"])
-			this.Array[A_Index,"Text"] := Obj.list.1.definition
-		}
-		
-	}
-	
-	
-	GiveArray() {
-		Return % this.Array
 	}
 }

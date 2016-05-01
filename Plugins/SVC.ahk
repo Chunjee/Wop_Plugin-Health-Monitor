@@ -98,9 +98,7 @@ Sb_CheckSVCs()
 
 
 Class SVC {
-	
 	__New(para_Name) {
-		
 		this.Info_Array := []
 		this.Info_Array["Name"] := Fn_QuickRegEx(para_Name,"(\d+)")
 		this.Info_Array["URL"] := "http://" . para_Name . "/wschk/"
@@ -115,7 +113,6 @@ Class SVC {
 	
 
 	UpdateGUI() {
-		
 		;Update the GUIBox depending on the status
 		CombinedText := "`n" . ""
 		
@@ -136,13 +133,11 @@ Class SVC {
 		this.Draw(" " . CombinedText, Fn_RGB("0xFFFFFF"), 14) ;White Check Unsuccessful
 	}
 	
-	DrawDefault()
-	{
+	DrawDefault() {
 		this.Draw("UnChecked", Fn_RGB("0xFFFFFF"), 18) ;White Unchecked
 	}
 	
-	Draw(para_Text, para_Color, para_TextSize = 18)
-	{
+	Draw(para_Text, para_Color, para_TextSize = 18)	{
 		global endboxsize
 		TextArray := StrSplit(para_Text,"`n")
 		
@@ -199,7 +194,8 @@ Class SVC {
 
 
 	ErrorCheck() {
-	if (this.Info_Array["CurrentStatus"] != "Online") {
-		Return 1
+		if (this.Info_Array["CurrentStatus"] != "Online") {
+			Return 1
+		}
 	}
 }

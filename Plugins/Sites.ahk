@@ -126,12 +126,16 @@ Class SiteMonitor {
 			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 30) ;Green Online
 			Return
 		}
-		If (CurrentStatus = "MainenancePage") {
+		If (CurrentStatus = "MaintenancePage") {
 			this.Draw("MAINT PAGE" . CombinedText, Fn_RGB("0xFF6600"), 22) ;Orange MAINT PAGE
 			Return
 		}
+		If (CurrentStatus = "Outage") {
+			this.Draw("OUTAGE" . CombinedText, Fn_RGB("0xFF6600"), 22) ;Orange MAINT PAGE
+			Return
+		}
 		;All others failed
-		this.Draw("Check Unsuccessful" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White Check Unsuccessful
+		this.Draw("Unsuccessful" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White Check Unsuccessful
 	}
 	
 	DrawDefault()
@@ -188,20 +192,39 @@ Class SiteMonitor {
 			;Msgbox, % The_MemoryFile
 		
 		;Try to understand what state the page is in but assume "Check unsuccessful"
-		this.Info_Array["CurrentStatus"] := "Unknown"
+
+		;Outage Message
 		
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(inconvenience)")
+		if (PageCheck != "null") {
+			this.Info_Array["CurrentStatus"] := "Outage"
+			Return
+		}
+
+		;Normal Mainenance
+		this.Info_Array["CurrentStatus"] := "Unknown"
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Important Notice)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "MainenancePage"
 			Return
 		}
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(ainenance)")
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(currently unavailable)")
 		if (PageCheck != "null") {
-			this.Info_Array["CurrentStatus"] := "MainenancePage"
+			this.Info_Array["CurrentStatus"] := "MaintenancePage"
 			Return
 		}
 
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(quickDepositUrl)")
+		;Online Status
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(<\/script>)")
+		if (PageCheck != "null") {
+			this.Info_Array["CurrentStatus"] := "Online"
+			Return
+		}
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(races-navigation-skeleton)")
+		if (PageCheck != "null") {
+			this.Info_Array["CurrentStatus"] := "Online"
+			Return
+		}PageCheck := Fn_QuickRegEx(The_MemoryFile, "(setCSSLoaded)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Online"
 			Return

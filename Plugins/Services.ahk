@@ -64,9 +64,6 @@ If (PluginActive_Bool) {
 
 
 
-
-
-
 SB_CheckServices()
 {
 	global
@@ -238,8 +235,9 @@ Class Services_Class {
 
 
 	ErrorCheck() {
-	if (this.HealthStatus != 1) {
-		Return 1
+		if (this.HealthStatus != 1) {
+			Return 1
+		}
 	}
 }
 
