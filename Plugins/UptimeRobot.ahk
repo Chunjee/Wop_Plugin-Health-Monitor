@@ -1,5 +1,5 @@
 ﻿;; This plugin uses the faster download directly to memory
-TxtFile = %A_ScriptDir%\plugins\Sites2.txt
+TxtFile = %A_ScriptDir%\plugins\UpTimeRobot.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True
@@ -8,26 +8,34 @@ IfExist, % TxtFile
 }
 
 If (PluginActive_Bool) {
+
+	;Figure out GUI box size
 	gui_orginaly := gui_y
 	gui_y += 20
 	gui_x = 30
 	height = 0
-	SiteDirect_Array := []
+	UptimeRobot_Array := []
 
 	endboxsize := 100 * 1.4
-	SiteDirect_BoxSize := endboxsize
-	;Read from DVR.txt about what DVRs to monitor
-	Loop, Read, %A_ScriptDir%\plugins\Sites2.txt
+	UptimeRobot_BoxSize := endboxsize
+
+
+	;Read from .txt about what to monitor
+	Loop, Read, % TxtFile
 	{
-		if (InStr(A_LoopReadLine,";")) {
+		if (InStr(A_LoopReadLine,"UptimeRobotAPIKey:")) {
+			APIKey := Fn_QuickRegEx(A_LoopReadLine,"UptimeRobotAPIKey:(\S+)")
+		}
+		if (InStr(A_LoopReadLine,";") || InStr(A_LoopReadLine,"//")) { ;Skip any ; or // line
 			Continue
 		}
 		;Grab the Name and Url out of each line.
 		The_SiteName := Fn_QuickRegEx(A_LoopReadLine,"Name:(\S+)")
-		The_SiteURL := Fn_QuickRegEx(A_LoopReadLine,"URL:([\w:\/\.]+)")
-		;Create the DVR Object for each
+		The_SiteURL := Fn_QuickRegEx(A_LoopReadLine,"KEY:(\S+)")
+		;Create the Object for each
+		msgbox, % The_SiteName "   " The_SiteURL
 		if (The_SiteName != "null" && The_SiteURL != "null") {
-			SiteDirect%A_Index% := New SiteMonitorDirect(The_SiteName, The_SiteURL)
+			UptimeRobot%A_Index% := New UptimeRobot(APIKey)
 			
 			;Add new line if max ammount of boxes reached
 			if (gui_x >= 870) {
@@ -42,10 +50,10 @@ If (PluginActive_Bool) {
 			gui_x += endboxsize + 10
 			
 			;Change to a re-drawable gui for the Site
-			SiteDirect%A_Index%.CreateButton(hWnd)
+			UptimeRobot%A_Index%.CreateButton(hWnd)
 			
 			;Add object to array for enumeration
-			SiteDirect_Array[A_Index] := SiteDirect%A_Index%
+			UptimeRobot_Array[A_Index] := UptimeRobot%A_Index%
 		}
 	}
 	gui_y += endboxsize + 20
@@ -57,7 +65,7 @@ If (PluginActive_Bool) {
 	Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Sites2
 	Gui, Font
 
-	SetTimer, CheckSitesDirect, 2000
+	SetTimer, CheckUptimeRobot, 2000
 }
 
 
@@ -67,26 +75,26 @@ If (PluginActive_Bool) {
 ;Plugin functions and classes-------------------------------
 
 
-Sb_CheckSitesDirect()
+Sb_CheckUptimeRobot()
 {
 	global
 	
-	CheckSitesDirect:
-	SetTimer, CheckSitesDirect, -60000
+	CheckUptimeRobot:
+	SetTimer, CheckUptimeRobot, -60000
 	;global SiteTop_Array
 	
-	endboxsize := SiteDirect_BoxSize
+	endboxsize := UptimeRobot_BoxSize
 	
 	;Go through the list of sites
-	Loop, % SiteDirect_Array.MaxIndex() {
+	Loop, % UptimeRobot_Array.MaxIndex() {
 		;Get Status and Statistics of each
-		SiteDirect%A_Index%.CheckStatus()
+		UptimeRobot%A_Index%.SendRequest()
 		
 		;Update GUI Box of each
-		SiteDirect%A_Index%.UpdateGUI()
+		UptimeRobot%A_Index%.UpdateGUI()
 
 		;Report any errors
-		if (SiteDirect%A_Index%.ErrorCheck()) {
+		if (UptimeRobot%A_Index%.ErrorCheck()) {
 			Fn_ErrorCount(1)
 		}
 	}
@@ -96,13 +104,14 @@ Sb_CheckSitesDirect()
 
 
 
-Class SiteMonitorDirect {
+Class UptimeRobot {
 	
-	__New(para_Name, para_URL) {
+	__New(para_APIKEY) {
 		
 		this.Info_Array := []
 		this.Info_Array["Name"] := para_Name
 		this.Info_Array["URL"] := para_URL
+		this.APIKey := para_APIKEY ;Passed as parameter
 		this.DrawDefault()
 	}
 	
@@ -141,13 +150,11 @@ Class SiteMonitorDirect {
 		this.Draw("Unsuccessful" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White Check Unsuccessful
 	}
 	
-	DrawDefault()
-	{
+	DrawDefault() {
 		this.Draw("Starting..." . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White Unchecked
 	}
 	
-	Draw(para_Text, para_Color, para_TextSize = 18)
-	{
+	Draw(para_Text, para_Color, para_TextSize = 18) {
 		global endboxsize
 		TextArray := StrSplit(para_Text,"`n")
 		
@@ -167,6 +174,27 @@ Class SiteMonitorDirect {
 		this.GDI.BitBlt()
 	}
 	
+	SendRequest() {
+		static BaseURL := "https://api.uptimerobot.com/getMonitors?apiKey=" UriEncode("u327426-ac75ccfb1e0b11a158f30e4d") "&responseTimes=1&responseTimesLimit=3" . "&format=json"
+		
+		msgbox, % BaseURL
+		clipboard := BaseURL
+		HTTP_Req := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+		HTTP_Req.Open("GET", BaseURL, True)
+		HTTP_Req.Send()
+		Response := HTTP_Req.ResponseText
+		
+		File := FileOpen("temp.json", "w")
+		File.Write(Response)
+		File.Close()
+		
+		Result := Fn_JSONtoOBJ(Response)
+		Array_GUI(Result)
+		
+		if !(Result := Fn_JSONtoOBJ(Response).responseData.results[1])
+			return "No results found"
+		Out := Fn_HtmlDecode(Result.titleNoFormatting)
+	}
 
 	CheckStatus() {
 		;Download the page and try to understand what state it is in. ONLINE / MAINTENANCE / OTHER

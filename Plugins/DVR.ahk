@@ -210,7 +210,7 @@ Class DVR {
 		if (CurrentStatus = 2) {
 			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 30) ;Green Online
 		} else {
-			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED ???
+			this.Draw("???" . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED Error
 			this.SetOptimal()
 
 			;Record error to text file

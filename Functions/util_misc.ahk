@@ -1,4 +1,4 @@
-﻿; Version 0.5 of all around useful functions
+﻿; Version 0.6 of all around useful functions
 
 ;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
 ; Functions
@@ -78,6 +78,25 @@ Fn_SearchSimpleArray(Obj,para_Search)
 Return False
 }
 
+Fn_UriDecode(Uri)
+{
+	Pos := 1
+	While Pos := RegExMatch(Uri, "i)(%[\da-f]{2})+", Code, Pos)
+	{
+		VarSetCapacity(Var, StrLen(Code) // 3, 0), Code := SubStr(Code,2)
+		Loop, Parse, Code, `%
+			NumPut("0x" A_LoopField, Var, A_Index-1, "UChar")
+		StringReplace, Uri, Uri, `%%Code%, % StrGet(&Var, "UTF-8"), All
+	}
+	Return, Uri
+}
+
+Fn_HtmlDecode(Text)
+{
+	html := ComObjCreate("htmlfile")
+	html.write(Text)
+	return html.body.innerText
+}
 
 ;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
 ; Subroutines

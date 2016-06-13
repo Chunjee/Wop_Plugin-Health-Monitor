@@ -17,7 +17,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v1.0.3
+The_VersionName = v1.0.6
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -47,6 +47,7 @@ GUI_y := 50
 #Include Sites.ahk
 #Include Sites2.ahk
 #Include Speed.ahk
+#Include UptimeRobot.ahk
 #Include Services.ahk
 #Include SVC.ahk
 

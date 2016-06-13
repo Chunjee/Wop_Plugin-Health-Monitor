@@ -130,8 +130,12 @@ Class SiteMonitor {
 			this.Draw("MAINT PAGE" . CombinedText, Fn_RGB("0xFF6600"), 22) ;Orange MAINT PAGE
 			Return
 		}
+		If (CurrentStatus = "Offline") {
+			this.Draw("OUTAGE" . CombinedText, Fn_RGB("0xCC0000"), 22) ;Red Offline Page
+			Return
+		}
 		If (CurrentStatus = "Outage") {
-			this.Draw("OUTAGE" . CombinedText, Fn_RGB("0xFF6600"), 22) ;Orange MAINT PAGE
+			this.Draw("OUTAGE" . CombinedText, Fn_RGB("0x990000"), 22) ;DarkRed Outage Page
 			Return
 		}
 		;All others failed
@@ -140,7 +144,7 @@ Class SiteMonitor {
 	
 	DrawDefault()
 	{
-		this.Draw("Unchecked" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White Unchecked
+		this.Draw("Starting..." . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White Unchecked
 	}
 	
 	Draw(para_Text, para_Color, para_TextSize = 18)
@@ -192,20 +196,30 @@ Class SiteMonitor {
 			;Msgbox, % The_MemoryFile
 		
 		;Try to understand what state the page is in but assume "Check unsuccessful"
+		this.Info_Array["CurrentStatus"] := "Unknown"
 
 		;Outage Message
-		
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(inconvenience)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Outage"
 			Return
 		}
+		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Service Unavailable)")
+		if (PageCheck != "null") {
+			this.Info_Array["CurrentStatus"] := "Outage"
+			Return
+		}
+		/*PageCheck := Fn_QuickRegEx(The_MemoryFile, "(503)") ;HTTP 503 
+		if (PageCheck != "null") {
+			this.Info_Array["CurrentStatus"] := "Outage"
+			Return
+		}
+		*/
 
 		;Normal Mainenance
-		this.Info_Array["CurrentStatus"] := "Unknown"
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Important Notice)")
 		if (PageCheck != "null") {
-			this.Info_Array["CurrentStatus"] := "MainenancePage"
+			this.Info_Array["CurrentStatus"] := "MaintenancePage"
 			Return
 		}
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(currently unavailable)")
@@ -229,18 +243,20 @@ Class SiteMonitor {
 			this.Info_Array["CurrentStatus"] := "Online"
 			Return
 		}
+
+
 		;SPECIAL CASES BELOW HERE: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		;Clipboard := The_MemoryFile
 		;Touch Sites
 		if (InStr(this.Info_Array["Name"],"Touch")) {
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(touch-revamp)")
-			;Clipboard := The_MemoryFile
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				Return
 			}
 			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(please)")
 			if (PageCheck = "please") {
-				this.Info_Array["CurrentStatus"] := "MainenancePage"
+				this.Info_Array["CurrentStatus"] := "MaintenancePage"
 				Return
 			}
 		}
