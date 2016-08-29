@@ -4,9 +4,7 @@
 	httpObject.Open("GET",para_URL, false) ;Open communication
 	httpObject.Send() ;Send the "get" request
 
-
 	Response := httpObject.ResponseText ;Set the "text" variable to the response
-
 	If (Response != "") {
 		Return % Response
 	} Else {

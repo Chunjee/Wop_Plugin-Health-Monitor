@@ -169,24 +169,34 @@ Class SiteMonitorDirect {
 	
 
 	CheckStatus() {
-		;Download the page and try to understand what state it is in. ONLINE / MAINTENANCE / OTHER
+		;;Download the page and try to understand what state it is in. ONLINE / MAINTENANCE / OTHER
 		
 		;Download Page to memory
 		The_MemoryFile := ""
 
 		;Try to download the page 4 times and quit on first success
-		Loop, 4 {
+		maxtries := 3
+		Loop, % maxtries {
 			The_MemoryFile := Fn_DownloadtoFile(this.Info_Array["URL"])
-			If (The_MemoryFile != "null" || A_Index = 4) {
+			this.Info_Array["CurrentStatus"] := "Unknown"
+			If (A_Index = (maxtries)) {
+				The_MemoryFile := Fn_IOdependantDownload(this.Info_Array["URL"])
+			}
+			If (The_MemoryFile != "null" || A_Index = maxtries) { ;quit after success or last try
 				Break
 			}
 		}
-		;Debug, check the downloaded HTML
+		;Debug, check the response
 			;Clipboard := The_MemoryFile
 			;Msgbox, % this.Info_Array["Name"] . "`n`r" The_MemoryFile
 		
-		;Try to understand what state the page is in but assume "Check unsuccessful"
+		;;Try to understand what state the page is in but assume "Check unsuccessful"
 		this.Info_Array["CurrentStatus"] := "Unknown"
+
+		;quit early if not successful with getting a response
+		if (The_MemoryFile = "null") {
+			return
+		}
 		
 		;Normal Mainenance
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(maintenance\.tvg\.com\/)")
@@ -208,6 +218,17 @@ Class SiteMonitorDirect {
 		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(<\/script>)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Online"
+		}
+
+		;Micro Services: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		if (InStr(The_MemoryFile,"status")) {
+			;convert JSON resoponse to Object
+			Response := Fn_JSONtoOBJ(The_MemoryFile)
+			If (Response.Status = "OK") {
+				this.Info_Array["CurrentStatus"] := "Online"
+			} else {
+				this.Info_Array["CurrentStatus"] := "Outage"
+			}
 		}
 
 
