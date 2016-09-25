@@ -1,4 +1,4 @@
-﻿;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
+;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
 ;Description
 ;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
 ; Monitors several TVG systems
@@ -17,7 +17,7 @@ SetBatchLines -1 ;Go as fast as CPU will allow
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v1.0.6
+The_VersionName = v1.0.8
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -295,6 +295,11 @@ Fn_DataFileInfoTime(para_File) {
 	}
 	
 	Return "ERROR"
+}
+
+Fn_SeparateArguments(para_Arguments) {
+Arguemnts_Array := []
+
 }
 
 ;/--\--/--\--/--\--/--\--/--\

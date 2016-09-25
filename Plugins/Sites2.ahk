@@ -224,7 +224,7 @@ Class SiteMonitorDirect {
 		if (InStr(The_MemoryFile,"status")) {
 			;convert JSON resoponse to Object
 			Response := Fn_JSONtoOBJ(The_MemoryFile)
-			If (Response.Status = "OK") {
+			if (Response.Status = "OK" || Response.Status = "UP") {
 				this.Info_Array["CurrentStatus"] := "Online"
 			} else {
 				this.Info_Array["CurrentStatus"] := "Outage"
