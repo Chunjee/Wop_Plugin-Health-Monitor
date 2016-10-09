@@ -59,7 +59,7 @@ If (PluginActive_Bool) {
 	Gui, Font
 
 
-	SetTimer, CheckSpeeds, 2000
+	SetTimer, CheckSpeeds, -2000
 }
 
 
@@ -74,9 +74,7 @@ If (PluginActive_Bool) {
 Sb_CheckSpeeds()
 {
 	global
-	CheckSpeeds:
-	SetTimer, CheckSpeeds, -60000
-	
+	CheckSpeeds:	
 	endboxsize := Speed_BoxSize
 	
 	;Update the status and stats of each Speed
@@ -96,7 +94,7 @@ Sb_CheckSpeeds()
 			Fn_ErrorCount(1)
 		}
 	}
-	;Clipboard := Fn_JSONfromOBJ(SpeedTop_Array)
+	SetTimer, CheckSpeeds, -60000
 	Return
 }
 

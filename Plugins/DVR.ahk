@@ -48,7 +48,7 @@ If (PluginActive_Bool) {
 
 	gui_y += endboxsize + 20
 
-	SetTimer, CheckDVRs, 2000
+	SetTimer, CheckDVRs, -2000
 }
 
 
@@ -64,8 +64,6 @@ Sb_CheckDVRs()
 {
 	global
 	CheckDVRs:
-	SetTimer, CheckDVRs, -60000
-	
 	endboxsize := DVR_BoxSize
 	
 	;Update the status and stats of each DVR
@@ -81,7 +79,7 @@ Sb_CheckDVRs()
 		;Set Optimal
 		;DVR%A_Index%.SetOptimal()
 	}
-	;Clipboard := Fn_JSONfromOBJ(DVRTop_Array)
+	SetTimer, CheckDVRs, -60000
 	Return
 }
 

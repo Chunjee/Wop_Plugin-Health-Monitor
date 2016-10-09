@@ -53,7 +53,7 @@ If (PluginActive_Bool) {
 	Gui, Font
 
 
-	SetTimer, CheckSVCs, 2000
+	SetTimer, CheckSVCs, -2000
 }
 
 
@@ -69,9 +69,6 @@ Sb_CheckSVCs()
 	global
 	
 	CheckSVCs:
-	SetTimer, CheckSVCs, -60000
-	;global SVCTop_Array
-	
 	endboxsize := SVC_BoxSize
 	
 	;Go through the list of SVCs
@@ -91,7 +88,7 @@ Sb_CheckSVCs()
 			Fn_ErrorCount(1)
 		}
 	}
-	;Clipboard := Fn_JSONfromOBJ(SVCTop_Array)
+	SetTimer, CheckSVCs, -60000
 	Return
 }
 

@@ -57,7 +57,7 @@ If (PluginActive_Bool) {
 	Gui, Add, GroupBox, x6 y%gui_orginaly% w980 h%height%, Sites2
 	Gui, Font
 
-	SetTimer, CheckSitesDirect, 2000
+	SetTimer, CheckSitesDirect, -2000
 }
 
 
@@ -72,9 +72,6 @@ Sb_CheckSitesDirect()
 	global
 	
 	CheckSitesDirect:
-	SetTimer, CheckSitesDirect, -60000
-	;global SiteTop_Array
-	
 	endboxsize := SiteDirect_BoxSize
 	
 	;Go through the list of sites
@@ -91,6 +88,7 @@ Sb_CheckSitesDirect()
 		}
 	}
 	Fn_ErrorCount("report")
+	SetTimer, CheckSitesDirect, -60000
 	Return
 }
 

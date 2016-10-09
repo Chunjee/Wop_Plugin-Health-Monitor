@@ -59,7 +59,7 @@ If (PluginActive_Bool) {
 	Gui, Font
 
 
-	SetTimer, CheckServices, 2000
+	SetTimer, CheckServices, -2000
 }
 
 
@@ -68,8 +68,6 @@ SB_CheckServices()
 {
 	global
 	CheckServices:
-	SetTimer, CheckServices, -60000
-	
 	endboxsize := Services_BoxSize
 	
 	;Update the status and stats of each
@@ -86,7 +84,7 @@ SB_CheckServices()
 			Fn_ErrorCount(1)
 		}
 	}
-	;Clipboard := Fn_JSONfromOBJ(ServicesTop_Array)
+	SetTimer, CheckServices, -60000
 	Return
 }
 
