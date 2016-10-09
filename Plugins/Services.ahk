@@ -1,4 +1,4 @@
-﻿TxtFile = %A_ScriptDir%\plugins\Services.txt
+﻿TxtFile = %A_WorkingDir%\plugins\Services.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True
@@ -96,7 +96,7 @@ Class Services_Class {
 		this.Info_Array := []
 		this.Label := para_Name
 		X = 0
-		Loop, Read, %A_ScriptDir%\plugins\services\%para_Name%.txt
+		Loop, Read, %A_WorkingDir%\plugins\services\%para_Name%.txt
 		{
 			If (InStr(A_LoopReadLine,";")) {
 				Continue

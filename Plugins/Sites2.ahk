@@ -1,5 +1,5 @@
 ﻿;; This plugin uses the faster download directly to memory
-TxtFile = %A_ScriptDir%\plugins\Sites2.txt
+TxtFile = %A_WorkingDir%\plugins\Sites2.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True
@@ -17,7 +17,7 @@ If (PluginActive_Bool) {
 	endboxsize := 100 * 1.4
 	SiteDirect_BoxSize := endboxsize
 	;Read from DVR.txt about what DVRs to monitor
-	Loop, Read, %A_ScriptDir%\plugins\Sites2.txt
+	Loop, Read, %A_WorkingDir%\plugins\Sites2.txt
 	{
 		if (InStr(A_LoopReadLine,";")) {
 			Continue
@@ -123,6 +123,10 @@ Class SiteMonitorDirect {
 			this.Draw("Online" . CombinedText, Fn_RGB("0x009900"), 30) ;Green Online
 			Return
 		}
+		If (CurrentStatus = "Unknown") {
+			this.Draw("Unknown" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White "Unknown" Reply
+			Return
+		}
 		If (CurrentStatus = "MaintenancePage") {
 			this.Draw("MAINT PAGE" . CombinedText, Fn_RGB("0xFF6600"), 22) ;Orange MAINT PAGE
 			Return
@@ -222,10 +226,14 @@ Class SiteMonitorDirect {
 		if (InStr(The_MemoryFile,"status")) {
 			;convert JSON resoponse to Object
 			Response := Fn_JSONtoOBJ(The_MemoryFile)
+			if (Response.Status = "BAD" || Response.Status = "DOWN") {
+				this.Info_Array["CurrentStatus"] := "Outage"
+			}
 			if (Response.Status = "OK" || Response.Status = "UP") {
 				this.Info_Array["CurrentStatus"] := "Online"
 			} else {
-				this.Info_Array["CurrentStatus"] := "Outage"
+				this.Info_Array["CurrentStatus"] := "Unknown"
+				FileAppend, % "`n" . A_Now . "     -    " . The_MemoryFile, % A_WorkingDir . "\MicroserviceErrors.txt"
 			}
 		}
 

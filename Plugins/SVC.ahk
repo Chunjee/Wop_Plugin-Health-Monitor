@@ -1,4 +1,4 @@
-﻿TxtFile = %A_ScriptDir%\plugins\SVC.txt
+﻿TxtFile = %A_WorkingDir%\plugins\SVC.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True
@@ -173,7 +173,7 @@ Class SVC {
 		if (PageCheck = "HEALTHY") {
 			this.Info_Array["CurrentStatus"] := "HEALTHY"
 		} Else {
-			FileAppend, % "`n" . A_Now . "     -    " . this.Info_Array["HTMLPage"], % A_ScriptDir . "\SVCErrors.txt"
+			FileAppend, % "`n" . A_Now . "     -    " . this.Info_Array["HTMLPage"], % A_WorkingDir . "\SVCErrors.txt"
 		}
 
 		;Match Unavailable

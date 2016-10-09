@@ -1,4 +1,4 @@
-﻿TxtFile = %A_ScriptDir%\plugins\Speed.txt
+﻿TxtFile = %A_WorkingDir%\plugins\Speed.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True

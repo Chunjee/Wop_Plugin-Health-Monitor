@@ -13,7 +13,8 @@ WinHide % "ahk_id " DllCall("GetConsoleWindow", "ptr")
 ;~~~~~~~~~~~~~~~~~~~~~
 SetBatchLines -1 ;Go as fast as CPU will allow
 #NoTrayIcon ;No tray icon
-#SingleInstance Force ;Do not allow running more then one instance at a time
+#SingleInstance off ;Do not warn user about running more than one instance
+SetWorkingDir, A_ScriptDir
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
@@ -38,6 +39,17 @@ Sb_RemoteShutDown() ;Allows for remote shutdown
 ;/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\
 ;StartUp
 ;\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/--\--/
+
+;parse any command line arguments, if any
+Arguments = %1%
+if (Arguments) {
+	Option_dir := Fn_QuickRegEx(Arguments,"dir=(\S+)")
+	if (Option_dir) {
+		SetWorkingDir, % Option_dir
+	}
+}
+
+
 
 GUI_x := 24
 GUI_y := 50
@@ -295,11 +307,6 @@ Fn_DataFileInfoTime(para_File) {
 	}
 	
 	Return "ERROR"
-}
-
-Fn_SeparateArguments(para_Arguments) {
-Arguemnts_Array := []
-
 }
 
 ;/--\--/--\--/--\--/--\--/--\

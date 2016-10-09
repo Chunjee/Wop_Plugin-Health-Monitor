@@ -1,4 +1,4 @@
-﻿TxtFile = %A_ScriptDir%\plugins\DVR.txt
+﻿TxtFile = %A_WorkingDir%\plugins\DVR.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True
@@ -213,7 +213,7 @@ Class DVR {
 
 			;Record error to text file
 			MachineName := this.Info_Array["Name"]
-			FileAppend, %A_YYYY%%A_MM%%A_DD% [%A_Hour%:%A_Min%] <%MachineName%> %CurrentStatus%`n`r, %A_ScriptDir%\Data\Errors.txt
+			FileAppend, %A_YYYY%%A_MM%%A_DD% [%A_Hour%:%A_Min%] <%MachineName%> %CurrentStatus%`n`r, %A_WorkingDir%\Data\Errors.txt
 		}
 	}
 	
@@ -245,7 +245,7 @@ Fn_CurrentUnixTime()
 WM_PAINT()
 {
 	Sleep, -1 ; Let the scrollbar redraw before painting over it
-	MyButton.BitBlt()
+	;MyButton.BitBlt()
 }
 
 WM_MOUSEMOVE(wParam, lParam, Msg, hWnd)
