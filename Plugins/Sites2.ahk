@@ -223,7 +223,7 @@ Class SiteMonitorDirect {
 		}
 
 		;Micro Services: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		if (InStr(The_MemoryFile,"status")) {
+		if (InStr(this.Info_Array["URL"],"health")) {
 			;convert JSON resoponse to Object
 			Response := Fn_JSONtoOBJ(The_MemoryFile)
 			if (Response.Status = "BAD" || Response.Status = "DOWN") {
@@ -233,7 +233,7 @@ Class SiteMonitorDirect {
 				this.Info_Array["CurrentStatus"] := "Online"
 			} else {
 				this.Info_Array["CurrentStatus"] := "Unknown"
-				FileAppend, % "`n" . A_Now . "     -    " . The_MemoryFile, % A_WorkingDir . "\MicroserviceErrors.txt"
+				FileAppend, % "`n" . A_Now . "     -    " . The_MemoryFile, % A_ScriptDir . "\MicroserviceErrors.txt"
 			}
 		}
 
