@@ -306,6 +306,7 @@ class CustomButton
 	Draw(Text, Color, TextColor)
 	{
 		critical
+		Sleep, -1 ; Let the scrollbar redraw before painting over it
 		this.GDI.FillRectangle(0, 0, this.GDI.CliWidth, this.GDI.CliHeight, Color, TextColor)
 		this.GDI.DrawText(0, 0, 100, 50, Text, TextColor, "Courier New", 20, "CC")
 		this.GDI.BitBlt()

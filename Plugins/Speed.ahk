@@ -128,6 +128,7 @@ Class Speed {
 		TextArray := StrSplit(para_Text,"`n")
 		
 		critical
+		Sleep, -1 ; Let the scrollbar redraw before painting over it
 		this.GDI.FillRectangle(0, 0, this.GDI.CliWidth, this.GDI.CliHeight, para_Color, "0x000000")
 		
 		x := 30

@@ -18,7 +18,7 @@ SetWorkingDir, A_ScriptDir
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v1.1.0
+The_VersionName = v1.1.1
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
