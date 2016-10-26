@@ -127,7 +127,7 @@ Class SiteMonitor {
 			Return
 		}
 		If (CurrentStatus = "CheckFailed") {
-			this.Draw("Unknown" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White "Unknown" Reply
+			this.Draw("Download Failed" . CombinedText, Fn_RGB("0xFFF79A"), 22) ;Yellow "Download Failed"
 			Return
 		}
 		If (CurrentStatus = "Offline") {

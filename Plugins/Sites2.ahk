@@ -128,11 +128,11 @@ Class SiteMonitorDirect {
 			Return
 		}
 		If (CurrentStatus = "CheckFailed") {
-			this.Draw("Unknown" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White "Unknown" Reply
+			this.Draw("Download Failed" . CombinedText, Fn_RGB("0xFFF79A"), 22) ;Yellow "Download Failed"
 			Return
 		}
 		If (CurrentStatus = "MaintenancePage") {
-			this.Draw("Download Failed" . CombinedText, Fn_RGB("0x0066FF"), 22) ;Blue Unknown
+			this.Draw("MAINT" . CombinedText, Fn_RGB("0xFF6600"), 22) ;Orange MAINT PAGE
 			Return
 		}
 		If (CurrentStatus = "Offline") {
