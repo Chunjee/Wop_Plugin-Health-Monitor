@@ -127,8 +127,12 @@ Class SiteMonitorDirect {
 			this.Draw("Unknown" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White "Unknown" Reply
 			Return
 		}
+		If (CurrentStatus = "CheckFailed") {
+			this.Draw("Unknown" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White "Unknown" Reply
+			Return
+		}
 		If (CurrentStatus = "MaintenancePage") {
-			this.Draw("MAINT PAGE" . CombinedText, Fn_RGB("0xFF6600"), 22) ;Orange MAINT PAGE
+			this.Draw("Download Failed" . CombinedText, Fn_RGB("0x0066FF"), 22) ;Blue Unknown
 			Return
 		}
 		If (CurrentStatus = "Offline") {
@@ -185,8 +189,11 @@ Class SiteMonitorDirect {
 			If (A_Index = (maxtries)) {
 				The_MemoryFile := Fn_IOdependantDownload(this.Info_Array["URL"])
 			}
-			If (The_MemoryFile != "null" || A_Index = maxtries) { ;quit after success or last try
+			If (The_MemoryFile != "null") { ;quit after success
 				Break
+			}
+			If (A_Index >= maxtries) { ;quit after max tries exeeded
+				this.Info_Array["CurrentStatus"] := "CheckFailed"
 			}
 		}
 		;Debug, check the response

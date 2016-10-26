@@ -1,5 +1,5 @@
-﻿;; This plugin uses the slower download to file. Use Sites2 whenever possible
-TxtFile = %A_ScriptDir%\plugins\Sites.txt
+;; This plugin uses the slower download to file. Use Sites2 whenever possible
+TxtFile = %A_WorkingDir%\plugins\Sites.txt
 IfExist, % TxtFile
 {
 	PluginActive_Bool := True
@@ -36,7 +36,6 @@ If (PluginActive_Bool) {
 				gui_y += endboxsize + 10
 				height += endboxsize + 30
 			}
-
 			;Create GUI box for each DVR
 			Gui, Add, Progress, x%gui_x% y%gui_y% w%endboxsize% h%endboxsize% hWndhWnd, 100
 			Gui, Show, w1000 , %The_ProjectName%
@@ -59,7 +58,7 @@ If (PluginActive_Bool) {
 	Gui, Font
 
 
-	SetTimer, CheckSites, 2000
+	SetTimer, CheckSites, -2000
 }
 
 
@@ -74,9 +73,6 @@ Sb_CheckSites()
 	global
 	
 	CheckSites:
-	SetTimer, CheckSites, -60000
-	;global SiteTop_Array
-	
 	endboxsize := Site_BoxSize
 	
 	;Go through the list of sites
@@ -93,7 +89,7 @@ Sb_CheckSites()
 			Fn_ErrorCount(1)
 		}
 	}
-	;Clipboard := Fn_JSONfromOBJ(SiteTop_Array)
+	SetTimer, CheckSites, -60000
 	Return
 }
 
@@ -130,6 +126,10 @@ Class SiteMonitor {
 			this.Draw("MAINT PAGE" . CombinedText, Fn_RGB("0xFF6600"), 22) ;Orange MAINT PAGE
 			Return
 		}
+		If (CurrentStatus = "CheckFailed") {
+			this.Draw("Unknown" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White "Unknown" Reply
+			Return
+		}
 		If (CurrentStatus = "Offline") {
 			this.Draw("OUTAGE" . CombinedText, Fn_RGB("0xCC0000"), 22) ;Red Offline Page
 			Return
@@ -153,6 +153,7 @@ Class SiteMonitor {
 		TextArray := StrSplit(para_Text,"`n")
 		
 		critical
+		Sleep, -1 ; Let the scrollbar redraw before painting over it
 		this.GDI.FillRectangle(0, 0, this.GDI.CliWidth, this.GDI.CliHeight, para_Color, "0x000000")
 		
 		x := 30
@@ -170,7 +171,7 @@ Class SiteMonitor {
 	
 	CheckStatus() {
 		;Download the page and try to understand what state it is in. ONLINE / MAINTENANCE / OTHER
-		;HTMLFile_loc := % A_ScriptDir . "\Data\Temp\" . this.Info_Array["Name"] . ".html"
+		;HTMLFile_loc := % A_WorkingDir . "\Data\Temp\" . this.Info_Array["Name"] . ".html"
 		;Msgbox, HTMLFile_loc
 		/* 
 			;Old slow way of downloading pages
@@ -187,8 +188,11 @@ Class SiteMonitor {
 		;Try to download the page 4 times and quit on first success
 		Loop, 4 {
 			The_MemoryFile := Fn_IOdependantDownload(this.Info_Array["URL"])
-			if (The_MemoryFile != "null" || A_Index = 4) {
+			if (The_MemoryFile != "null") {
 				Break
+			}
+			If (A_Index >= 4) { ;quit after max tries exeeded
+				this.Info_Array["CurrentStatus"] := "CheckFailed"
 			}
 		}
 		;Debug, check the downloaded HTML
