@@ -5,8 +5,8 @@
 ; 
 
 ;Hide CMD window
-DllCall("AllocConsole")
-WinHide % "ahk_id " DllCall("GetConsoleWindow", "ptr")
+;DllCall("AllocConsole")
+;WinHide % "ahk_id " DllCall("GetConsoleWindow", "ptr")
 
 ;~~~~~~~~~~~~~~~~~~~~~
 ;Compile Options
@@ -62,6 +62,7 @@ GUI_y := 50
 #Include UptimeRobot.ahk
 #Include Services.ahk
 #Include SVC.ahk
+#Include casperjs.ahk
 
 ;GUI_x += 50 ;Box
 ;GUI_y += 50 ;Text

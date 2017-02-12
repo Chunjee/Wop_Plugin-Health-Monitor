@@ -150,24 +150,20 @@ Class AutoWager {
 		}
 		this.Info_Array[A_Index,"RAWSTATUS"] := Fn_RunCasperjs()
 		Msgbox, % this.Info_Array[A_Index,"RAWSTATUS"]
+		clipboard := this.Info_Array[A_Index,"RAWSTATUS"]
 
 		
 	}
 
 	ParseResults() {
-
-		;Understand cases of no repsonse or timeout as 0
-		if (this.Info_Array["Time"] = "-1" || this.Info_Array["Time"] = "") {
-			this.Info_Array["Time"] := 0
-		}
-
-		;Add latest ping to AVGArray
-		this.AVGArray.Push(this.Info_Array["Time"])
+		;Extract meaning from the console dump
+		this.Info_Array["Track"] := Fn_QuickRegEx(this.Info_Array[A_Index,"RAWSTATUS"],"OUTPUT: Track- (.+)")
+		this.Info_Array["Race"] := Fn_QuickRegEx(this.Info_Array[A_Index,"RAWSTATUS"],"OUTPUT: Race- (.+)")
+		this.Info_Array["Message"] := Fn_QuickRegEx(this.Info_Array[A_Index,"RAWSTATUS"],"OUTPUT: Message- (.+)")
 	}
 	
 	
 	UpdateGUI() {
-		
 		;Update the GUIBox depending on the status of the AutoWager
 		ResponseTime := this.Info_Array["ResponseAVG"]
 		CombinedText := this.Info_Array["IP"] . "`nDelay:" . this.Info_Array["ResponseAVG"]
@@ -177,7 +173,7 @@ Class AutoWager {
 			this.Draw("NO REPLY " . CombinedText, Fn_RGB("0xCC0000"), 30) ;RED
 			Return
 		}
-
+		
 		if (ResponseTime < 60) {
 			this.Draw(CombinedText, Fn_RGB("0x009900"), 20) ;Green
 			Return

@@ -2,11 +2,18 @@ console.log("started");
 var casper = require('casper').create();
 
 var x = require('casper').selectXPath;
+var fs = require('fs');
+
+//read account.dat and split into account array
+var data = fs.read('account.dat');
+var account = data.split(" ");
+console.log(account[3]);
 
 casper.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36");
 
 var counter = 0
 
+//Bet Ticket popup handler
 casper.on('popup.loaded', function() {
     this.echo("popup list entries - "+this.popups.list());
     this.withPopup(/tvg/, function() {
@@ -14,8 +21,8 @@ casper.on('popup.loaded', function() {
         //*[@id="bi[1][]"]
         //ALL: sa[1] 
         //this.thenClick(x('//*[@id="bi[1][]"]'));
-        console.log('OUTPUT: Track -' + this.fetchText('#btSummary_trackRace > div:nth-child(1)'));
-        console.log('OUTPUT: Race -' + this.fetchText('#btSummary_trackRace > div:nth-child(2)'));
+        console.log('OUTPUT: Track- ' + this.fetchText('#btSummary_trackRace > div:nth-child(1)'));
+        console.log('OUTPUT: Race- ' + this.fetchText('#btSummary_trackRace > div:nth-child(2)'));
         this.thenClick(x('//*[@id="sa[1]"]'));
         this.thenClick('#submitWager');
         // runner "3" bi[1][]
@@ -23,7 +30,7 @@ casper.on('popup.loaded', function() {
         casper.capture('popup' + counter + '.png' );
         //console.log('OUTPUT Track -' + this.echo('#btSummary_trackRace'));
         //console.log('OUTPUT Message -' + this.echo('found #message_panel[1]'));
-        console.log('OUTPUT: Message ' + this.fetchText('#message_panel > p'));
+        console.log('OUTPUT: Message- ' + this.fetchText('#message_panel > p'));
         console.log('popup caught in screenshot','INFO');
     });
 });
@@ -32,18 +39,18 @@ casper.start('http://tvg.com/optout');
 
 casper.then(function () {
     //x-path     //*[@id="accountField"]
-    this.sendKeys('#accountField','');
-    this.sendKeys('#pinField','');
+    this.sendKeys('#accountField',account[0]);
+    this.sendKeys('#pinField',account[1]);
     //lets try clicking stuff
     casper.thenClick('.select2-choice');
-    casper.sendKeys('#s2id_autogen1_search','Oregon');
+    casper.sendKeys('#s2id_autogen1_search',account[2]);
     //this.sendKeys('.select2-choice','Oregon');
     //this.sendKeys(x('//*[@id="s2id_stateField"]/a'),'Oregon');
     console.log("filled out login");
 });
 
 casper.then(function () {
-    casper.sendKeys('#s2id_autogen1_search','Oregon')
+    casper.sendKeys('#s2id_autogen1_search',account[2])
     this.sendKeys('#s2id_autogen1_search', casper.page.event.key.Enter);
     casper.thenClick('#loginSubmit');
     console.log("clicked login");
@@ -78,16 +85,11 @@ casper.waitForPopup("/tvg/", function() {
     casper.capture('pic.png');  
 });
 
+
 /*
 casper.withPopup(/boxDarkGrayCurved/, function() {
     this.test.assertTitle('Bet Ticket');
     console.log('bet ticket is now active');
-});
-*/
-
-/*
-casper.then(function () {
-    casper.capture('pic.png');  
 });
 */
 
