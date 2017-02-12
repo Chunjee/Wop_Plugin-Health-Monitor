@@ -14,12 +14,17 @@ casper.on('popup.loaded', function() {
         //*[@id="bi[1][]"]
         //ALL: sa[1] 
         //this.thenClick(x('//*[@id="bi[1][]"]'));
+        console.log('OUTPUT: Track -' + this.fetchText('#btSummary_trackRace > div:nth-child(1)'));
+        console.log('OUTPUT: Race -' + this.fetchText('#btSummary_trackRace > div:nth-child(2)'));
         this.thenClick(x('//*[@id="sa[1]"]'));
         this.thenClick('#submitWager');
         // runner "3" bi[1][]
         counter++
         casper.capture('popup' + counter + '.png' );
-        console.log('popup caught in screenshot');
+        //console.log('OUTPUT Track -' + this.echo('#btSummary_trackRace'));
+        //console.log('OUTPUT Message -' + this.echo('found #message_panel[1]'));
+        console.log('OUTPUT: Message ' + this.fetchText('#message_panel > p'));
+        console.log('popup caught in screenshot','INFO');
     });
 });
 
