@@ -7,7 +7,7 @@ var fs = require('fs');
 //read account.dat and split into account array
 var data = fs.read('account.dat');
 var account = data.split(" ");
-console.log(account[3]);
+console.log("Account" + account[0]);
 
 casper.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36");
 
@@ -17,12 +17,13 @@ var counter = 0
 casper.on('popup.loaded', function() {
     this.echo("popup list entries - "+this.popups.list());
     this.withPopup(/tvg/, function() {
-        this.viewport(800,1000);
+        this.viewport(300,700);
         //*[@id="bi[1][]"]
         //ALL: sa[1] 
         //this.thenClick(x('//*[@id="bi[1][]"]'));
         console.log('OUTPUT: Track- ' + this.fetchText('#btSummary_trackRace > div:nth-child(1)'));
         console.log('OUTPUT: Race- ' + this.fetchText('#btSummary_trackRace > div:nth-child(2)'));
+        console.log('OUTPUT: Balance- ' + this.fetchText('#btSummary_balance'));
         this.thenClick(x('//*[@id="sa[1]"]'));
         this.thenClick('#submitWager');
         // runner "3" bi[1][]
@@ -58,7 +59,8 @@ casper.then(function () {
 
 casper.then(function () {
     this.echo( "Loaded: " + this.getTitle() );
-    casper.capture('pic.png');
+    console.log('OUTPUT: Login- 1');
+    casper.capture('FullPage.png');
 });
 
 /*
