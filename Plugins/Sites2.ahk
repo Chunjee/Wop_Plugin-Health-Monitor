@@ -64,6 +64,7 @@ If (PluginActive_Bool) {
 
 
 
+
 ;Plugin functions and classes-------------------------------
 
 
@@ -73,12 +74,14 @@ Sb_CheckSitesDirect()
 	
 	CheckSitesDirect:
 	endboxsize := SiteDirect_BoxSize
-	
 	;Go through the list of sites
 	Loop, % SiteDirect_Array.MaxIndex() {
 		;Get Status and Statistics of each
 		SiteDirect%A_Index%.CheckStatus()
 		
+		;Decypher the status of each based on the retrieved html/data
+		SiteDirect%A_Index%.UnderstandStatus()
+
 		;Update GUI Box of each
 		SiteDirect%A_Index%.UpdateGUI()
 
@@ -89,9 +92,8 @@ Sb_CheckSitesDirect()
 	}
 	Fn_ErrorCount("report")
 	SetTimer, CheckSitesDirect, -60000
-	Return
+Return
 }
-
 
 
 Class SiteMonitorDirect {
@@ -147,13 +149,11 @@ Class SiteMonitorDirect {
 		this.Draw("Unsuccessful" . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White Check Unsuccessful
 	}
 	
-	DrawDefault()
-	{
+	DrawDefault() {
 		this.Draw("Starting..." . CombinedText, Fn_RGB("0xFFFFFF"), 22) ;White Unchecked
 	}
 	
-	Draw(para_Text, para_Color, para_TextSize = 18)
-	{
+	Draw(para_Text, para_Color, para_TextSize = 18)	{
 		global endboxsize
 		TextArray := StrSplit(para_Text,"`n")
 		
@@ -164,8 +164,14 @@ Class SiteMonitorDirect {
 		x := 30
 		Loop, % TextArray.MaxIndex() {
 			If (A_Index = 1) {
+				;figure out text size for the first row
+				if (StrLen(this.Info_Array["Name"]) > 4) {
+					TextSize := 40 - (StrLen(this.Info_Array["Name"])*1.2)
+				} else {
+					TextSize := 40
+				}
 				;Always draw first line specifically and with para_TextSize
-				this.GDI.DrawText(0, 0, endboxsize, 50, this.Info_Array["Name"], "0x000000", "Times New Roman", 40, "CC")
+				this.GDI.DrawText(0, 0, endboxsize, 50, this.Info_Array["Name"], "0x000000", "Times New Roman", TextSize, "CC")
 			}
 			;Following lines are drawn generically
 			this.GDI.DrawText(0, x, endboxsize, 50, TextArray[A_Index], "0x000000", "Consolas", para_TextSize, "CC")
@@ -190,42 +196,41 @@ Class SiteMonitorDirect {
 				The_MemoryFile := Fn_IOdependantDownload(this.Info_Array["URL"])
 			}
 			If (The_MemoryFile != "null") { ;quit after success
+				this.Info_Array["MemoryFile"] := The_MemoryFile
 				Break
 			}
 			If (A_Index >= maxtries) { ;quit after max tries exeeded
 				this.Info_Array["CurrentStatus"] := "CheckFailed"
 			}
 		}
+	}
+
+	UnderstandStatus() {
 		;Debug, check the response
 			;Clipboard := The_MemoryFile
 			;Msgbox, % this.Info_Array["Name"] . "`n`r" The_MemoryFile
 		
 		;;Try to understand what state the page is in but assume "Check unsuccessful"
 		this.Info_Array["CurrentStatus"] := "Unknown"
-
-		;quit early if not successful with getting a response
-		if (The_MemoryFile = "null") {
-			return
-		}
 		
 		;Normal Mainenance
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(maintenance\.tvg\.com\/)")
+		PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(maintenance\.tvg\.com\/)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "MaintenancePage"
 		}
 
 		;Outage
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Service Unavailable)")
+		PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(Service Unavailable)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Outage"
 		}
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(503)") ;HTTP 503
+		PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(503)") ;HTTP 503
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Outage"
 		}
 
 		;Online Status
-		PageCheck := Fn_QuickRegEx(The_MemoryFile, "(<\/script>)")
+		PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(<\/script>)")
 		if (PageCheck != "null") {
 			this.Info_Array["CurrentStatus"] := "Online"
 		}
@@ -233,15 +238,18 @@ Class SiteMonitorDirect {
 		;Micro Services: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		if (InStr(this.Info_Array["URL"],"health")) {
 			;convert JSON resoponse to Object
-			Response := Fn_JSONtoOBJ(The_MemoryFile)
+			Response := Fn_JSONtoOBJ(this.Info_Array["MemoryFile"])
 			if (Response.Status = "BAD" || Response.Status = "DOWN") {
 				this.Info_Array["CurrentStatus"] := "Outage"
+				return
 			}
 			if (Response.Status = "OK" || Response.Status = "UP") {
 				this.Info_Array["CurrentStatus"] := "Online"
+				return
 			} else {
-				this.Info_Array["CurrentStatus"] := "Unknown"
-				FileAppend, % "`n" . A_Now . "     -    " . The_MemoryFile, % A_ScriptDir . "\MicroserviceErrors.txt"
+				FileAppend, % "`n" . this.Info_Array["URL"] . "     -    " . this.Info_Array["MemoryFile"], % A_ScriptDir . "\MicroserviceErrors.txt"
+				return
+				;this.Info_Array["CurrentStatus"] := "Unknown"
 			}
 		}
 
@@ -249,13 +257,13 @@ Class SiteMonitorDirect {
 		;SPECIAL CASES BELOW HERE: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		;Touch Sites
 		if (InStr(this.Info_Array["Name"],"Touch")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(!isAndroidApp)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(!isAndroidApp)")
 
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
 			}
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(please)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(please)")
 			if (PageCheck = "please") {
 				this.Info_Array["CurrentStatus"] := "MaintenancePage"
 				return
@@ -263,14 +271,14 @@ Class SiteMonitorDirect {
 		}
 		;HRTV
 		if (InStr(this.Info_Array["Name"],"HRTV")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Wager NOW)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(TVG2)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
 			}
 		}
 		if (InStr(this.Info_Array["Name"],"HRTV")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(maintenance)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(maintenance)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "MaintenancePage"
 				return
@@ -278,12 +286,12 @@ Class SiteMonitorDirect {
 		}
 		;Betfair
 		if (InStr(this.Info_Array["Name"],"Betfair")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(function)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(function)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
 			}
-			PageCheck := Fn_QuickRegEx(The_MemoryFile,"(maintenance)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"],"(maintenance)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "MaintenancePage"
 				return
@@ -291,7 +299,7 @@ Class SiteMonitorDirect {
 		}
 		;CMS
 		if (InStr(this.Info_Array["Name"],"cms")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Drupal)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(Drupal)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
@@ -301,7 +309,7 @@ Class SiteMonitorDirect {
 		}
 		;Equibase Store
 		if (InStr(this.Info_Array["Name"],"Eq-Store")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(TRACK_ID=)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(TRACK_ID=)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
@@ -312,7 +320,7 @@ Class SiteMonitorDirect {
 		}
 		;Exchange
 		if (InStr(this.Info_Array["Name"],"Exchange")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(accountDetails)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(accountDetails)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
@@ -322,7 +330,7 @@ Class SiteMonitorDirect {
 		}
 		;Event Collector
 		if (InStr(this.Info_Array["Name"],"Event")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(Untitled Page)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(Untitled Page)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
@@ -333,7 +341,7 @@ Class SiteMonitorDirect {
 		}
 		;Neulion
 		if (InStr(this.Info_Array["Name"],"Neulion")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(<track name=)")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(<track name=)")
 			if (PageCheck != "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 				return
@@ -341,7 +349,7 @@ Class SiteMonitorDirect {
 		}
 		;Track Video Dropdown. Non-functional~~~~~~~~~~
 		if (InStr(this.Info_Array["Name"],"Dropdown")) {
-			PageCheck := Fn_QuickRegEx(The_MemoryFile, "(\[\])")
+			PageCheck := Fn_QuickRegEx(this.Info_Array["MemoryFile"], "(\[\])")
 			if (PageCheck = "null") {
 				this.Info_Array["CurrentStatus"] := "Online"
 			} else if (PageCheck = "[]") {

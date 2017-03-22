@@ -5,8 +5,8 @@
 ; 
 
 ;Hide CMD window
-;DllCall("AllocConsole")
-;WinHide % "ahk_id " DllCall("GetConsoleWindow", "ptr")
+DllCall("AllocConsole")
+WinHide % "ahk_id " DllCall("GetConsoleWindow", "ptr")
 
 ;~~~~~~~~~~~~~~~~~~~~~
 ;Compile Options
@@ -18,7 +18,7 @@ SetWorkingDir, A_ScriptDir
 ComObjError(False) ; Ignore any http timeouts
 
 The_ProjectName := "TVG Argus"
-The_VersionName = v1.1.1
+The_VersionName = v1.1.2
 
 ;Dependencies
 #Include %A_ScriptDir%\Functions
@@ -73,7 +73,7 @@ GUI_Build()
 if(A_IsCompiled) {
 	Gui +AlwaysOnTop
 }
-
+Sleep, 20000
 ;Actual End. All processes are handled in plugins
 Return
 

@@ -17,9 +17,11 @@ Fn_IOdependantDownload(para_URL)
 	;Obviously this is an old way. when more time is available: use an InternetExplorer.Application object, and try pulling from there
 	IO_file = %A_ScriptDir%\Data\Temp\data.txt
 	FileDelete, % IO_file
+	Sleep 300
 	UrlDownloadToFile, %para_URL%, % IO_file
-	Sleep 100
+	Sleep 1000
 	FileRead, MemoryFile, % IO_file
+	Sleep 1000
 	FileDelete, % IO_file
 	Return %MemoryFile%
 }
